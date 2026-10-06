@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About SiteSafeCheck: how the free website security check works</title>
+<meta name="description" content="What SiteSafeCheck checks, what it doesn't, how the score works, and who built it.">
+<link rel="canonical" href="https://sitesafecheck.com/about">
+<meta name="theme-color" content="#0b1f3a">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SiteSafeCheck">
+<meta property="og:url" content="https://sitesafecheck.com/about">
+<meta property="og:title" content="About SiteSafeCheck: how the free website security check works">
+<meta property="og:description" content="What SiteSafeCheck checks, what it doesn't, how the score works, and who built it.">
+<meta property="og:image" content="https://sitesafecheck.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SiteSafeCheck: free website security check for small businesses">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/styles.css">
+<!--GA-->
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+ <div class="wrap">
+  <a class="logo" href="/" aria-label="SiteSafeCheck home"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6 11 14v16c0 13.4 8.9 23.8 21 27.6C44.1 53.8 53 43.4 53 30V14L32 6Z" fill="#14907d"/><path d="m22 32 7 7 13-14" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>SiteSafeCheck</a>
+  <nav class="main" aria-label="Main"><a href="/#what">What we check</a><a href="/#fixes">Get it fixed</a><a href="/#faq">FAQ</a><a href="/about">About</a></nav>
+ </div>
+</header>
+<main id="main" class="wrap page">
+<h1>About SiteSafeCheck</h1>
+<p>SiteSafeCheck is a free website security check for small businesses. You enter your website, and it reports common security gaps in plain English: what it found, what that means for you and your customers, and how to fix it.</p>
+
+<h2>What it checks</h2>
+<ul>
+ <li><strong>HTTPS &amp; certificate:</strong> whether HTTPS works, http:// redirects to it, the certificate is trusted and not close to expiring, the TLS version, whether old TLS 1.0/1.1 is still accepted, and insecure (mixed) content on the home page.</li>
+ <li><strong>Security headers:</strong> Strict-Transport-Security (HSTS), Content-Security-Policy, X-Frame-Options / frame-ancestors, X-Content-Type-Options, Referrer-Policy, and Permissions-Policy.</li>
+ <li><strong>Email spoofing protection:</strong> SPF, the DMARC policy, DKIM on common selector names (if we don't find it, we say "not found on common selectors", because your provider may use a name we didn't try), and MX records for context.</li>
+ <li><strong>Information leaks:</strong> software version numbers in headers, public folder listings, a short list of files that should never be public (like <code>.env</code>, <code>.git</code>, database backups, and phpinfo pages), and whether you publish a <code>security.txt</code>.</li>
+ <li><strong>Cookies:</strong> the Secure, HttpOnly, and SameSite flags on cookies your home page sets.</li>
+</ul>
+
+<h2>How it checks (passive only)</h2>
+<p>The scan does what a normal visitor or search engine does. It loads your public home page, reads the response headers and certificate, looks up public DNS records, and requests a short list of well-known file paths. A file only counts as exposed when its contents match what that file really looks like, and we compare against a "page not found" baseline so sites that answer every address with the same page don't get false alarms. We never show the contents of sensitive files.</p>
+<p>It never logs in, fills in forms, guesses passwords, or sends attack traffic. Requests identify themselves honestly with the user agent <code>SiteSafeCheck/1.0 (+https://sitesafecheck.com/about)</code>.</p>
+<p><strong>Only check websites you own or have permission to test.</strong></p>
+
+<h2>What it doesn't do</h2>
+<p>A passive check sees only what's publicly visible. It can't prove a website is secure, and it doesn't look inside your code, plugins, hosting account, or server. It is not a penetration test or a code audit. A good grade means the common configuration gaps are covered, nothing more.</p>
+
+<h2>How the score works</h2>
+<p>Every report starts at 100. Each failed check subtracts 15 points (high severity), 8 (medium), or 3 (low). Warnings subtract 8, 4, or 1. Informational results and checks we couldn't complete subtract nothing. Any high-severity failure, like an untrusted certificate or an exposed <code>.env</code> file, caps the score at 69. Grades: A is 90+, B 80+, C 70+, D 60+, and F below 60. Each report shows exactly which checks cost points.</p>
+
+<h2>The AI part</h2>
+<p>The findings come from plain code, not AI. After the scan, one request to Google's Gemini rewrites the findings that need attention into plain English, tailored to your platform when we can tell what it is. The AI can't add or change findings. If it's unavailable, or says something we don't allow (like calling a site "secure"), we use explanations written by hand.</p>
+
+<h2>Who built it</h2>
+<p>SiteSafeCheck was built by <a href="https://nickcastrobuilds.com">Nick Castro</a>, a web developer who builds websites for small businesses (<a href="https://www.linkedin.com/in/nicolas-castro-4081545b">LinkedIn</a>).</p>
+<p>Nick can fix the common gaps this check finds: security headers, HTTPS/SSL setup, SPF, DKIM and DMARC email protection, hiding software version banners, and cookie flags. A one-time fix is $250–$500, a monthly re-scan and watch is $50–$100/month, or it can be bundled into a website package. He doesn't do penetration testing, code audits, malware or breach cleanup, or server repairs. For those, and for exposed sensitive files, he'll refer you to a specialist.</p>
+<p class="ractions"><a class="btn btn-dark" href="tel:+17082501040">Call (708) 250-1040</a><a class="btn btn-ghost" href="sms:+17082501040">Text Nick</a><a class="btn btn-ghost" href="mailto:nickcastro1520@gmail.com?subject=Website%20security%20fixes">Email Nick</a></p>
+<p><a href="/">Run a free check →</a></p>
+</main>
+<footer>
+ <div class="wrap">
+  <span>Built by <a href="https://nickcastrobuilds.com">Nick Castro</a> · <a href="tel:+17082501040">(708) 250-1040</a> · <a href="mailto:nickcastro1520@gmail.com">nickcastro1520@gmail.com</a></span>
+  <nav aria-label="Footer"><a href="/about">About</a><a href="/privacy">Privacy</a><a href="/llms.txt">llms.txt</a></nav>
+ </div>
+</footer>
+</body>
+</html>

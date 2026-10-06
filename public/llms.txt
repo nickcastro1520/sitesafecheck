@@ -1,0 +1,28 @@
+# SiteSafeCheck
+
+> A free, passive website security check for small businesses, built by Nick Castro (https://nickcastrobuilds.com), a web developer. A visitor enters their website and confirms they own it or are authorized to test it. Plain code then checks common, publicly visible security gaps, and one Google Gemini call rewrites the findings into plain-English "what this means" and "how to fix it" notes. Free, no sign-up.
+
+## What it checks
+- HTTPS and certificate: HTTPS works, HTTP redirects to HTTPS, certificate trust and expiry, TLS version, whether TLS 1.0/1.1 is still accepted, mixed content on the home page.
+- Security headers: Strict-Transport-Security, Content-Security-Policy, X-Frame-Options / frame-ancestors, X-Content-Type-Options, Referrer-Policy, Permissions-Policy.
+- Email spoofing protection: SPF, DMARC policy, DKIM on common selectors (reported as "not found on common selectors", never "missing"), MX records.
+- Information leaks: software version banners, directory listing, a short verified list of commonly exposed files (.env, .git, backups, phpinfo) checked against a soft-404 baseline, security.txt.
+- Cookies: Secure, HttpOnly, SameSite flags.
+
+## Facts
+- Price: free (fair-use rate limits).
+- Method: passive only. No logins, form submissions, password guessing, or attack traffic. User agent: SiteSafeCheck/1.0 (+https://sitesafecheck.com/about).
+- Score: starts at 100; failed checks subtract 15 (high), 8 (medium), or 3 (low); warnings about half; any high-severity failure caps the score at 69. A 90+, B 80+, C 70+, D 60+, F below 60.
+- Limits: a passive scan can't prove a site is secure and isn't a penetration test or code audit.
+- Data: the checked domain and report are cached about 10 minutes; a hashed IP is kept about a day for rate limits; the domain and findings are sent to Google's Gemini API to write explanations; nothing is sold.
+
+## Fixes
+- Nick Castro fixes common configuration gaps: security headers, HTTPS/SSL setup, SPF/DKIM/DMARC, hiding version banners, cookie flags. One-time fix $250-$500; monthly re-scan and watch $50-$100/month; or bundled into a website package.
+- Penetration testing, code audits, malware or breach cleanup, server repairs, and exposed sensitive files are referred to specialists.
+- Contact: call or text (708) 250-1040, nickcastro1520@gmail.com
+
+## Links
+- [Run a free check](https://sitesafecheck.com/)
+- [About and methodology](https://sitesafecheck.com/about)
+- [Privacy](https://sitesafecheck.com/privacy)
+- [Built by Nick Castro](https://nickcastrobuilds.com/)

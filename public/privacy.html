@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy · SiteSafeCheck</title>
+<meta name="description" content="What SiteSafeCheck stores, for how long, and who it shares data with.">
+<link rel="canonical" href="https://sitesafecheck.com/privacy">
+<meta name="theme-color" content="#0b1f3a">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SiteSafeCheck">
+<meta property="og:url" content="https://sitesafecheck.com/privacy">
+<meta property="og:title" content="Privacy · SiteSafeCheck">
+<meta property="og:description" content="What SiteSafeCheck stores, for how long, and who it shares data with.">
+<meta property="og:image" content="https://sitesafecheck.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SiteSafeCheck: free website security check for small businesses">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/styles.css">
+<!--GA-->
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+ <div class="wrap">
+  <a class="logo" href="/" aria-label="SiteSafeCheck home"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6 11 14v16c0 13.4 8.9 23.8 21 27.6C44.1 53.8 53 43.4 53 30V14L32 6Z" fill="#14907d"/><path d="m22 32 7 7 13-14" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>SiteSafeCheck</a>
+  <nav class="main" aria-label="Main"><a href="/#what">What we check</a><a href="/#fixes">Get it fixed</a><a href="/#faq">FAQ</a><a href="/about">About</a></nav>
+ </div>
+</header>
+<main id="main" class="wrap page">
+<h1>Privacy</h1>
+<p>Short version: SiteSafeCheck keeps as little as it can, for as short a time as it can, and sells nothing.</p>
+<h2>What we store</h2>
+<ul>
+ <li><strong>The domain you check and its report</strong> are cached for about 10 minutes so repeat checks are instant and the same site isn't scanned over and over.</li>
+ <li><strong>A one-way hash of your IP address</strong> is kept for up to about a day to enforce fair-use limits. We don't store the IP address itself.</li>
+ <li>We don't ask for your name or email, and we don't use accounts.</li>
+</ul>
+<h2>Who sees what</h2>
+<ul>
+ <li><strong>Google Gemini:</strong> to write the plain-English explanations, the scanned domain and its findings are sent to Google's Gemini API. Nothing about you is included.</li>
+ <li><strong>Google Analytics:</strong> if analytics is turned on, it counts visits and events like "scan started" and the grade a report got. The domain you check is not sent to analytics.</li>
+ <li><strong>Hosting:</strong> the site runs on Vercel, which keeps standard server logs.</li>
+ <li><strong>The site you check</strong> sees a handful of requests from our server identified as <code>SiteSafeCheck/1.0</code>. It doesn't see your IP address.</li>
+</ul>
+<h2>Contacting Nick</h2>
+<p>If you call, text, or email Nick from a report, that conversation is just between you and him. He uses it only to reply to you.</p>
+<h2>Questions</h2>
+<p>Email <a href="mailto:nickcastro1520@gmail.com">nickcastro1520@gmail.com</a>.</p>
+</main>
+<footer>
+ <div class="wrap">
+  <span>Built by <a href="https://nickcastrobuilds.com">Nick Castro</a> · <a href="tel:+17082501040">(708) 250-1040</a> · <a href="mailto:nickcastro1520@gmail.com">nickcastro1520@gmail.com</a></span>
+  <nav aria-label="Footer"><a href="/about">About</a><a href="/privacy">Privacy</a><a href="/llms.txt">llms.txt</a></nav>
+ </div>
+</footer>
+</body>
+</html>

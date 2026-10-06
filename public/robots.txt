@@ -1,0 +1,6 @@
+# Everyone, including AI assistants, is welcome here.
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://sitesafecheck.com/sitemap.xml
