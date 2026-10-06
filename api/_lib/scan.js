@@ -157,7 +157,7 @@ export async function buildReport(raw, { useAi = true, now = Date.now() } = {}) 
   const scoreInfo = scoreFindings(findings);
   const ex = await explain(findings, raw.meta, { useAi, scoreInfo });
   return {
-    v: 1,
+    v: 2,
     createdAt: new Date(now).toISOString(),
     host: raw.host,
     meta: raw.meta,

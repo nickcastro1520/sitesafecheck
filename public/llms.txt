@@ -1,6 +1,6 @@
 # SiteSafeCheck
 
-> A free, passive website security check for small businesses, built by Nick Castro (https://nickcastrobuilds.com), a web developer. A visitor enters their website and confirms they own it or are authorized to test it. Plain code then checks common, publicly visible security gaps, and one Google Gemini call rewrites the findings into plain-English "what this means" and "how to fix it" notes. Free, no sign-up.
+> A free, passive website security check for small businesses, built by Nick Castro (https://nickcastrobuilds.com), a web developer. A visitor enters their website and confirms they own it or are authorized to test it. Plain code then checks common, publicly visible security gaps, and one Google Gemini call rewrites the findings into plain-English "what this means" notes and a short, hedged "worst case" line. Each finding also names the type of change that fixes it (for example, a hosting configuration change or a DNS record), without step-by-step instructions. Free, no sign-up.
 
 ## What it checks
 - HTTPS and certificate: HTTPS works, HTTP redirects to HTTPS, certificate trust and expiry, TLS version, whether TLS 1.0/1.1 is still accepted, mixed content on the home page.

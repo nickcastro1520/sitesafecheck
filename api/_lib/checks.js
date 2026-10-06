@@ -30,7 +30,7 @@ export function analyzeHeaders(h, { https }) {
     const age = m ? Number(m[1]) : 0;
     const days = Math.floor(age / 86400);
     if (!m || age === 0) out.push(F("hsts", "fail", "medium", `Strict-Transport-Security: ${clip(hsts, 160)} (max-age is 0 or missing, so it does nothing)`));
-    else if (age < 15552000) out.push(F("hsts", "warn", "medium", `Strict-Transport-Security: ${clip(hsts, 160)} (${age < 86400 ? `${Math.max(1, Math.round(age / 60))} minutes` : `${days} days`}; 180+ days is recommended)`, { days }));
+    else if (age < 15552000) out.push(F("hsts", "warn", "medium", `Strict-Transport-Security: ${clip(hsts, 160)} (${age < 86400 ? `${Math.max(1, Math.round(age / 60))} minutes` : `${days} days`}; that's short, so browsers forget it quickly)`, { days }));
     else out.push(F("hsts", "pass", "medium", `Strict-Transport-Security: ${clip(hsts, 160)}`, { days }));
   }
 
@@ -55,13 +55,13 @@ export function analyzeHeaders(h, { https }) {
   const fa = d["frame-ancestors"];
   if (fa) out.push(F("x_frame_options", "pass", "medium", `Content-Security-Policy frame-ancestors ${clip(fa.join(" "), 120)}${xfo ? `; X-Frame-Options: ${clip(xfo, 40)}` : ""}`));
   else if (/^(deny|sameorigin)$/i.test(xfo)) out.push(F("x_frame_options", "pass", "medium", `X-Frame-Options: ${clip(xfo, 40)}`));
-  else if (xfo) out.push(F("x_frame_options", "warn", "medium", `X-Frame-Options: ${clip(xfo, 80)} (not a value modern browsers honor; use DENY or SAMEORIGIN)`));
+  else if (xfo) out.push(F("x_frame_options", "warn", "medium", `X-Frame-Options: ${clip(xfo, 80)} (not a value modern browsers honor)`));
   else out.push(F("x_frame_options", "fail", "medium", "No X-Frame-Options header and no frame-ancestors rule in a Content-Security-Policy."));
 
   // nosniff
   const xcto = get("x-content-type-options");
   if (/nosniff/i.test(xcto)) out.push(F("x_content_type_options", "pass", "low", `X-Content-Type-Options: ${clip(xcto, 40)}`));
-  else out.push(F("x_content_type_options", "fail", "low", xcto ? `X-Content-Type-Options: ${clip(xcto, 60)} (should be nosniff)` : "No X-Content-Type-Options header."));
+  else out.push(F("x_content_type_options", "fail", "low", xcto ? `X-Content-Type-Options: ${clip(xcto, 60)} (not a value browsers recognize)` : "No X-Content-Type-Options header."));
 
   // Referrer-Policy (last recognized token wins, per spec)
   const rp = get("referrer-policy");

@@ -87,7 +87,7 @@
 
   document.addEventListener("click", (e) => {
     const a = e.target.closest && e.target.closest("a[data-cta]");
-    if (a) track("cta_click", { method: a.dataset.cta, location: a.closest("#report") ? "report" : "page" });
+    if (a) track("cta_click", { method: a.dataset.cta, location: a.dataset.loc || (a.closest("#report") ? "report" : "page") });
   });
 
   // Print: open every collapsed section so nothing is hidden on paper.
@@ -108,7 +108,8 @@
         bad && SEV[f.severity] ? h("span", { class: "tag t-sev", text: SEV[f.severity] }) : null),
       h("p", { class: "ev", text: f.evidence }));
     if (f.what) card.append(h("p", {}, h("span", { class: "lab", text: bad ? "What this means: " : "" }), f.what));
-    if (bad && f.fix) card.append(h("p", {}, h("span", { class: "lab", text: "How to fix: " }), f.fix));
+    if (bad && f.worst) card.append(h("p", { class: "worst" }, h("span", { class: "wicon", "aria-hidden": "true", text: "!" }), h("span", { class: "lab", text: "Worst case: " }), f.worst));
+    if (bad && f.fix) card.append(h("p", {}, h("span", { class: "lab", text: "How it's fixed: " }), f.fix));
     if (bad && f.fixBy === "nick") card.append(h("p", { class: "who", text: "Nick can fix this." }));
     if (bad && f.fixBy === "refer") card.append(h("p", { class: "who refer", text: "Have your developer, host, or a security professional handle this urgently. Nick can refer you out." }));
     return card;
@@ -127,31 +128,49 @@
         h("tfoot", {}, h("tr", {}, h("th", { scope: "row", text: "Score" }), h("td", { text: rep.score.capped ? `capped at ${r.highCap} (high-severity failure)` : "" }), h("td", { text: String(rep.score.score) })))) : h("p", { text: "Nothing was deducted." }));
   }
 
-  function ctaEl(rep, demo) {
-    const bad = rep.findings.filter((f) => f.status === "fail" || f.status === "warn");
-    const nick = bad.filter((f) => f.fixBy === "nick");
-    const refer = bad.filter((f) => f.fixBy === "refer");
+  const PRICES = "One-time fix $250–$500 · Monthly re-scan & watch $50–$100/mo · or bundled into a website package.";
+  const SCOPE_NOTE = "Nick fixes common configuration gaps: security headers, SSL/HTTPS, SPF/DKIM/DMARC email protection, hiding version banners, and cookie flags. He doesn't do penetration testing, code audits, malware or breach cleanup, or server repairs; for those he'll refer you to a specialist.";
+
+  function contactLinks(rep, nick, loc, light) {
     const host = rep.host;
     const body = `Hi Nick,\n\nI ran SiteSafeCheck on ${host} (grade ${rep.score.grade}, ${rep.score.score}/100) and I'd like help with:\n${nick.map((f) => `- ${f.title}`).join("\n") || "- a monthly re-scan"}\n\nName:\nBest phone:\n`;
     const mail = `mailto:${EMAIL}?subject=${encodeURIComponent(`SiteSafeCheck: help with ${host}`)}&body=${encodeURIComponent(body)}`;
     const sms = `sms:${PHONE}?&body=${encodeURIComponent(`Hi Nick, I ran SiteSafeCheck on ${host} (grade ${rep.score.grade}). Can you help fix the issues?`)}`;
+    return h("div", { class: "contact" },
+      h("a", { class: `btn ${light ? "btn-light" : "btn-dark"}`, href: `tel:${PHONE}`, "data-cta": "call", "data-loc": loc, text: "Call (708) 250-1040" }),
+      h("a", { class: "btn btn-ghost", href: sms, "data-cta": "text", "data-loc": loc, text: "Text (708) 250-1040" }),
+      h("a", { class: "btn btn-ghost", href: mail, "data-cta": "email", "data-loc": loc, text: `Email ${EMAIL}` }));
+  }
+
+  // Compact offer at the top of the report, only when there's something Nick can actually fix.
+  function ctaTopEl(rep) {
+    const nick = rep.findings.filter((f) => (f.status === "fail" || f.status === "warn") && f.fixBy === "nick");
+    if (!nick.length) return null;
+    return h("aside", { class: "cta-top", "aria-label": "Get these fixed" },
+      h("p", { class: "ct-h" }, h("strong", { text: "Want these fixed? Nick can handle it." }), ` ${nick.length} of the issues below ${nick.length === 1 ? "is" : "are"} the kind Nick fixes.`),
+      h("p", { class: "ct-p", text: PRICES }),
+      contactLinks(rep, nick, "report_top", false),
+      h("p", { class: "print-contact", text: `Call or text (708) 250-1040 · ${EMAIL}` }));
+  }
+
+  function ctaEl(rep) {
+    const bad = rep.findings.filter((f) => f.status === "fail" || f.status === "warn");
+    const nick = bad.filter((f) => f.fixBy === "nick");
+    const refer = bad.filter((f) => f.fixBy === "refer");
     const lists = h("div", { class: "lists" });
     if (nick.length) lists.append(h("div", {}, h("h3", { text: `Nick can fix ${nick.length === 1 ? "this" : `these ${nick.length}`} from your report` }), h("ul", {}, nick.map((f) => h("li", { text: f.title })))));
     if (refer.length) lists.append(h("div", { class: "refer" }, h("h3", { text: "Referred out (handle urgently)" }), h("ul", {}, refer.map((f) => h("li", { text: f.title }))), h("p", { class: "small", text: "Have your developer, host, or a security professional handle these. Nick can refer you out." })));
     return h("section", { class: "cta", "aria-labelledby": "cta-h" },
-      h("h2", { id: "cta-h", text: nick.length ? "Want these fixed? Nick can fix the common website security gaps." : "Want to keep it this way? Nick can watch it for you." }),
-      h("p", { text: nick.length ? "Nick Castro is a web developer who fixes the everyday configuration gaps this check finds, explained in plain English, with no upsell to things you don't need." : "No common gaps for Nick to fix right now. A monthly re-scan catches changes, like a certificate that's about to expire." }),
+      h("h2", { id: "cta-h", text: nick.length ? "Want these fixed? Nick can handle it." : "Want to keep it this way? Nick can watch it for you." }),
+      h("p", { text: nick.length ? "Nick Castro is a web developer who fixes the everyday configuration gaps this check finds, explained in plain English, with no upsell to things you don't need. Call or text (708) 250-1040, or email " + EMAIL + "." : "No common gaps for Nick to fix right now. A monthly re-scan catches changes, like a certificate that's about to expire." }),
       lists.children.length ? lists : null,
       h("div", { class: "prices" },
-        h("div", { class: "price" }, h("h3", { text: "One-time fix" }), h("div", { class: "amt", text: "$250–$500" }), h("p", { text: "Security headers, HTTPS/SSL setup, SPF/DKIM/DMARC, version banners, cookie flags." })),
+        h("div", { class: "price" }, h("h3", { text: "One-time fix" }), h("div", { class: "amt", text: "$250–$500" }), h("p", { text: "Security headers, SSL/HTTPS setup, SPF/DKIM/DMARC email protection, hiding version banners, cookie flags." })),
         h("div", { class: "price" }, h("h3", { text: "Monthly re-scan & watch" }), h("div", { class: "amt", text: "$50–$100/mo" }), h("p", { text: "A fresh check every month and a plain-English note on what changed." })),
         h("div", { class: "price" }, h("h3", { text: "Website package" }), h("div", { class: "amt", text: "Bundled" }), h("p", { text: "Included when Nick builds or refreshes your website." }))),
-      h("div", { class: "contact" },
-        h("a", { class: "btn btn-light", href: `tel:${PHONE}`, "data-cta": "call", text: "Call (708) 250-1040" }),
-        h("a", { class: "btn btn-ghost", href: sms, "data-cta": "text", text: "Text Nick" }),
-        h("a", { class: "btn btn-ghost", href: mail, "data-cta": "email", text: `Email ${EMAIL}` })),
+      contactLinks(rep, nick, "report_bottom", true),
       h("p", { class: "print-contact", text: `Call or text (708) 250-1040 · ${EMAIL}` }),
-      h("p", { class: "small", text: "Nick fixes common configuration gaps. He doesn't do penetration testing, code audits, malware or breach cleanup, or server repairs; for those he'll refer you to a specialist." + (demo ? "" : "") }));
+      h("p", { class: "small", text: SCOPE_NOTE }));
   }
 
   function render(rep, { demo = false, cached = false } = {}) {
@@ -181,13 +200,14 @@
           h("p", { class: "rmeta", text: `Checked ${fmtDate(rep.createdAt)}${cached ? " (saved result from the last few minutes)" : ""}${rep.meta?.finalUrl ? ` · ${rep.meta.finalUrl}` : ""}${rep.meta?.cms ? ` · ${rep.meta.cms}` : ""}` }),
           h("p", { class: "summary", text: rep.summary }),
           h("div", { class: "chips" }, chips))),
+      ctaTopEl(rep),
       h("div", { class: "ractions noprint" },
         h("button", { type: "button", class: "btn btn-dark", onclick: () => window.print(), text: "Print / save as PDF" }),
         h("button", { type: "button", class: "btn btn-ghost", onclick: () => { out.hidden = true; input.value = ""; window.scrollTo({ top: 0 }); input.focus(); }, text: "Check another site" })),
       cats,
+      ctaEl(rep),
       scoreTable(rep),
-      h("p", { class: "scope", text: `${rep.scope} A passive check can't prove a site is secure; it shows common gaps that are visible from the outside.${rep.ai?.used ? " Explanations were written with help from Google Gemini, based only on the evidence shown." : ""}` }),
-      ctaEl(rep, demo)].flat().filter(Boolean));
+      h("p", { class: "scope", text: `${rep.scope} A passive check can't prove a site is secure; it shows common gaps that are visible from the outside.${rep.ai?.used ? " Explanations were written with help from Google Gemini, based only on the evidence shown." : ""}` })].flat().filter(Boolean));
     out.hidden = false;
     heading.focus({ preventScroll: true });
     out.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });

@@ -1,5 +1,6 @@
 // End-to-end scan with every network call mocked (HTTP, DNS, TLS probe).
 import test from "node:test";
+import { SNIPPET } from "../api/_lib/explain.js";
 import assert from "node:assert/strict";
 import { _setLookup, _setRequest, _setLegacyTls, _setDns } from "../api/_lib/net.js";
 import { collect, buildReport, orgDomain } from "../api/_lib/scan.js";
@@ -59,6 +60,13 @@ test("weak WordPress site: real failures, exposed .env referred out, version ban
   assert.equal(get("exposed_files").fixBy, "refer");
   assert.match(get("exposed_files").fix, /urgently/);
   assert.ok(!JSON.stringify(rep).includes("hunter2"), "secret contents must never appear in a report");
+  for (const f of rep.findings) {
+    const bad = f.status === "fail" || f.status === "warn";
+    assert.equal(Boolean(f.worst), bad, `${f.id}: worst case only on problems`);
+    for (const k of ["what", "fix", "worst"]) if (f[k]) assert.ok(!SNIPPET.test(f[k]), `${f.id}.${k} leaks a fix snippet: ${f[k]}`);
+  }
+  assert.ok(!SNIPPET.test(rep.summary));
+  assert.match(get("exposed_files").worst, /could/);
   assert.equal(get("directory_listing").status, "fail");
   assert.equal(get("server_banner").status, "fail");
   assert.equal(get("http_redirect").status, "fail");
@@ -105,4 +113,13 @@ test("DMARC falls back to the organizational domain for subdomains", async () =>
   assert.match(d.evidence, /inherited/);
   assert.equal(orgDomain("a.b.co.uk"), "b.co.uk");
   assert.equal(orgDomain("www.shop.com"), "shop.com");
+});
+
+test("no fix snippets appear anywhere in the bundled example report", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const demo = JSON.parse(await readFile(new URL("../public/demo.json", import.meta.url), "utf8"));
+  const bad = demo.findings.filter((f) => f.status === "fail" || f.status === "warn");
+  assert.ok(bad.length >= 5 && bad.every((f) => f.worst && /\bcould\b/.test(f.worst)), "every problem in the example has a worst case");
+  for (const f of demo.findings) for (const k of ["what", "fix", "worst"]) if (f[k]) assert.ok(!SNIPPET.test(f[k]), `${f.id}.${k}: ${f[k]}`);
+  assert.ok(!SNIPPET.test(demo.summary));
 });

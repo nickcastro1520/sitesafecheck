@@ -70,7 +70,7 @@ export async function POST(request) {
 
   if ((await incr(`rlb:${win}:${ipH}`, 700)) > c.burst) return json({ error: "rate_limited", message: "Too many requests. Please wait a few minutes." }, 429, { "Retry-After": "600" });
 
-  const cacheKey = `scan:v1:${target.host}`;
+  const cacheKey = `scan:v2:${target.host}`;
   const cached = await getJSON(cacheKey);
   if (cached) return json({ report: cached, cached: true });
 

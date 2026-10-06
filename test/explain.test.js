@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 
 process.env.GEMINI_API_KEY = "test-key";
 process.env.GEMINI_MODEL = "gemini-a,gemini-b";
-const { explain, parseAiJson, BANNED } = await import("../api/_lib/explain.js");
+const { explain, parseAiJson, BANNED, SNIPPET, cleanWorst } = await import("../api/_lib/explain.js");
 const { decorate } = await import("../api/_lib/scan.js");
 const { scoreFindings } = await import("../api/_lib/score.js");
 
@@ -29,10 +29,10 @@ const ok = (obj) => new Response(JSON.stringify({ candidates: [{ content: { part
 
 test("ONE batched call explains every non-passing finding; passes keep hand-written copy", async () => {
   mockGemini(() => ok({ summary: "Your site has a few gaps. Start by adding HSTS so browsers always use HTTPS.", items: [
-    { id: "hsts", what: "Browsers aren't told to stick to HTTPS on your WordPress site.", fix: "Add Strict-Transport-Security: max-age=31536000 in your nginx config." },
-    { id: "dmarc", what: "Fake emails using your domain still get delivered.", fix: "Change p=none to p=quarantine once reports look clean." },
-    { id: "exposed_files", what: "Your settings file can be downloaded by anyone.", fix: "Just delete it yourself in five minutes." },
-    { id: "made_up", what: "This finding does not exist at all.", fix: "Ignore me please." },
+    { id: "hsts", what: "Browsers aren't told to stick to HTTPS on your WordPress site.", fix: "Add Strict-Transport-Security: max-age=31536000 in your nginx config.", worst: "Someone on the same public Wi-Fi could quietly downgrade a visitor's first visit to an unencrypted page." },
+    { id: "dmarc", what: "Fake emails using your domain still get delivered.", fix: "Change p=none to p=quarantine once reports look clean.", worst: "Hackers send 3.4 billion fake emails a day and will target you." },
+    { id: "exposed_files", what: "Your settings file can be downloaded by anyone.", fix: "Just delete it yourself in five minutes.", worst: "Anyone could download that settings file and use any passwords in it to get into your site. Act now." },
+    { id: "made_up", what: "This finding does not exist at all.", fix: "Ignore me please.", worst: "This could be anything at all, really." },
   ] }));
   const r = await explain(findings, ctx, { useAi: true, scoreInfo });
   assert.equal(calls.length, 1);
@@ -42,10 +42,20 @@ test("ONE batched call explains every non-passing finding; passes keep hand-writ
   const prompt = calls[0].body.contents[0].parts[0].text;
   assert.ok(prompt.includes('"id":"hsts"') && prompt.includes('"id":"dmarc"') && !prompt.includes('"id":"cert_valid"'));
   const get = (id) => r.findings.find((f) => f.id === id);
+  assert.ok(prompt.includes('"worst":"..."') && !prompt.includes('"fix":"..."'), "same single call asks for the worst case, never for a fix");
   assert.equal(get("hsts").textSource, "ai");
-  assert.match(get("hsts").fix, /nginx/);
+  assert.equal(get("hsts").fix, "Fixed with a server or hosting configuration change (adding a security header).", "How it's fixed always comes from the catalog");
+  assert.doesNotMatch(JSON.stringify(r), /max-age|p=quarantine|nginx config/, "AI fix snippets never reach the report");
+  assert.equal(get("hsts").worstSource, "ai");
+  assert.match(get("hsts").worst, /^Someone on the same public Wi-Fi could/);
+  assert.equal(get("dmarc").textSource, "ai");
+  assert.equal(get("dmarc").worstSource, "fallback", "statistics and certainty words are rejected");
+  assert.match(get("dmarc").worst, /could/);
   assert.equal(get("exposed_files").textSource, "ai");
-  assert.match(get("exposed_files").fix, /security professional.*urgently/i, "referred-out fixes always keep the hand-written copy");
+  assert.equal(get("exposed_files").worst, "Anyone could download that settings file and use any passwords in it to get into your site.", "trimmed to one sentence");
+  assert.match(get("exposed_files").fix, /security professional/i);
+  assert.match(get("exposed_files").fix, /urgently/i, "referred-out fixes always keep the hand-written copy");
+  assert.equal(get("cert_valid").worst, undefined, "passing items get no worst case");
   assert.equal(get("cert_valid").textSource, "fallback");
   assert.ok(!r.findings.some((f) => f.id === "made_up"), "AI can't add findings");
   assert.equal(r.findings.length, findings.length);
@@ -56,7 +66,7 @@ test("ONE batched call explains every non-passing finding; passes keep hand-writ
 test("AI text that calls the site secure or sells pentests is rejected per item", async () => {
   mockGemini(() => ok({ summary: "Your site is secure overall.", items: [
     { id: "hsts", what: "After this fix your site is secure and hack-proof.", fix: "Add the header." },
-    { id: "dmarc", what: "Fake emails using your domain still get delivered.", fix: "Get a penetration test to be sure." },
+    { id: "dmarc", what: "Get a penetration test to be sure fake emails are blocked.", fix: "Add the record." },
   ] }));
   const r = await explain(findings, ctx, { useAi: true, scoreInfo });
   assert.equal(r.findings.find((f) => f.id === "hsts").textSource, "fallback");
@@ -94,4 +104,21 @@ test("parseAiJson and banned words", () => {
   assert.ok(BANNED.test("We recommend a pentest"));
   assert.ok(BANNED.test("your site is safe"));
   assert.ok(!BANNED.test("Add the header so browsers always use HTTPS."));
+});
+
+test("AI 'what' text that leaks a fix snippet falls back; worst-case filters", async () => {
+  mockGemini(() => ok({ summary: "Add v=DMARC1; p=reject to fix email spoofing today.", items: [
+    { id: "hsts", what: "Add the header Strict-Transport-Security: max-age=31536000 to your server.", worst: "Someone could intercept visitors." },
+    { id: "dmarc", what: "Fake emails using your domain still get delivered to people.", worst: "Your site has been hacked and customers could be next." },
+  ] }));
+  const r = await explain(findings, ctx, { useAi: true, scoreInfo });
+  const get = (id) => r.findings.find((f) => f.id === id);
+  assert.equal(get("hsts").textSource, "fallback");
+  assert.equal(get("dmarc").textSource, "ai");
+  assert.equal(get("dmarc").worstSource, "fallback");
+  assert.doesNotMatch(r.summary, /DMARC1/);
+  for (const bad of ["A pentest could reveal more problems on your site.", "Hackers will steal your data.", "Anyone could do this to 60% of small sites.", "Your site was breached and could be again.", "Someone sees your traffic.", "Add X-Frame-Options: DENY or a scammer could frame you."]) assert.equal(cleanWorst(bad), "", bad);
+  assert.equal(cleanWorst("A scammer could invisibly frame your site to trick visitors into clicking things they didn't mean to"), "A scammer could invisibly frame your site to trick visitors into clicking things they didn't mean to.");
+  for (const leak of ["max-age=31536000", "v=spf1 include:_spf.google.com ~all", "set p=reject", "```nginx", "<meta>", "X-Frame-Options: SAMEORIGIN", "Options -Indexes", "Step 1: open Settings"]) assert.ok(SNIPPET.test(leak), leak);
+  assert.ok(!SNIPPET.test("Browsers aren't told to always use HTTPS on your site, so a first visit could be intercepted."));
 });

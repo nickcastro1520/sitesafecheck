@@ -101,6 +101,9 @@ section.band .sub{color:var(--mut);margin:0 0 26px;max-width:720px}
 .ev{margin:10px 0 0;font:13.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#f1f5f9;border-radius:8px;padding:8px 10px;color:#1e293b;overflow-wrap:anywhere;white-space:pre-wrap}
 .find p{margin:10px 0 0}
 .find .lab{font-weight:700}
+.find p.worst{color:var(--hi);background:var(--hibg);border-left:3px solid var(--hi);border-radius:0 8px 8px 0;padding:6px 10px;font-weight:500}
+.find .worst .lab{color:var(--hi)}
+.wicon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;margin-right:6px;border-radius:50%;background:var(--hi);color:#fff;font-size:12px;font-weight:800;line-height:1;vertical-align:-3px}
 .who{margin:10px 0 0;font-size:14px;color:var(--mut)}
 .who.refer{color:var(--hi);font-weight:600}
 details.passed{margin:6px 0 0}
@@ -111,6 +114,9 @@ details.passed .find{box-shadow:none}
 .scorebox table{border-collapse:collapse;margin:10px 0;font-size:15px;width:100%;max-width:560px}
 .scorebox th,.scorebox td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
 .scope{margin:22px 0 0;font-size:14px;color:var(--mut)}
+.cta-top{margin:16px 0 22px;background:#ecfdf8;border:1px solid #99d9cc;border-left:6px solid var(--brand);border-radius:12px;padding:14px 18px}
+.cta-top p{margin:0 0 6px}.cta-top .ct-h{font-size:17px;color:var(--ink)}.cta-top .ct-h strong{color:var(--brand2)}.cta-top .ct-p{font-size:15px;color:var(--mut)}
+.cta-top .contact{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 0}.cta-top .btn{padding:9px 14px;font-size:15px}
 .cta{margin:34px 0 0;background:var(--navy);color:#fff;border-radius:18px;padding:28px}
 .cta h2{margin:0 0 8px;font-size:clamp(22px,3vw,30px);line-height:1.2}
 .cta p{color:#d5e2f2;margin:0 0 14px}
@@ -144,8 +150,11 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
  #report{padding:0}
  .wrap{padding:0}
  .find,.card{box-shadow:none;break-inside:avoid}
+ .find p.worst{-webkit-print-color-adjust:exact;print-color-adjust:exact;color:#9a1b13;border-left:3px solid #9a1b13}
+ .wicon{-webkit-print-color-adjust:exact;print-color-adjust:exact}
  .cta{background:#fff;color:#000;border:2px solid #000}.cta p,.cta ul,.cta .small{color:#000}.cta .lists div{border-color:#999}.cta .btn{display:none}
- .cta .print-contact{display:block!important}
+ .print-contact{display:block!important}
+ .cta-top{background:#fff;border:2px solid #000}.cta-top .contact{display:none}
  a{color:#000}
 }
 .print-contact{display:none}

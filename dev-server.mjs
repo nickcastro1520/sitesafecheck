@@ -16,7 +16,7 @@ if (process.env.MOCK_GEMINI) {
     await new Promise((r) => setTimeout(r, 800));
     const text = JSON.stringify({
       summary: `(Mock AI) This site has ${ids.length} things worth fixing. Start with the highest-priority item at the top of the report.`,
-      items: ids.map((id) => ({ id, what: `(Mock AI) Plain-English meaning of the ${id.replace(/_/g, " ")} finding for a business owner.`, fix: `(Mock AI) A concrete next step for ${id.replace(/_/g, " ")}.` })),
+      items: ids.map((id) => ({ id, what: `(Mock AI) Plain-English meaning of the ${id.replace(/_/g, " ")} finding for a business owner.`, worst: `(Mock AI) Someone could take advantage of the ${id.replace(/_/g, " ")} gap if it is left alone.` })),
     });
     return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text }] }, finishReason: "STOP" }] }), { status: 200, headers: { "Content-Type": "application/json" } });
   };

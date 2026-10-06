@@ -48,3 +48,20 @@ test("the site's own headers pass its own header checks", async () => {
   const f = analyzeHeaders(headers, { https: true });
   assert.ok(f.every((x) => x.status === "pass"), JSON.stringify(f.filter((x) => x.status !== "pass")));
 });
+
+test("report UI: red Worst case line with a text label, short How it's fixed line, CTAs tracked", async () => {
+  const app = await readFile(new URL("../public/app.js", import.meta.url), "utf8");
+  const css = await readFile(new URL("../public/styles.css", import.meta.url), "utf8");
+  assert.match(app, /class: "worst"/); assert.match(app, /"Worst case: "/); assert.match(app, /"How it's fixed: "/);
+  assert.doesNotMatch(app, /How to fix/);
+  assert.match(app, /Want these fixed\? Nick can handle it\./);
+  assert.match(app, /"data-loc": loc/); assert.match(app, /report_top/); assert.match(app, /report_bottom/);
+  assert.match(app, /track\("cta_click", \{ method: a\.dataset\.cta, location: a\.dataset\.loc/);
+  assert.match(app, /\$250–\$500/); assert.match(app, /\$50–\$100\/mo/);
+  assert.match(app, /doesn't do penetration testing, code audits, malware or breach cleanup/);
+  assert.match(css, /p\.worst\{color:var\(--hi\)/); assert.match(css, /@media print\{[\s\S]*p\.worst/);
+  for (const page of ["about.html", "index.html", "llms.txt"]) {
+    const t = await readFile(new URL(`../public/${page}`, import.meta.url), "utf8");
+    assert.doesNotMatch(t, /how to fix|v=spf1|v=DMARC1|max-age=/i, page);
+  }
+});

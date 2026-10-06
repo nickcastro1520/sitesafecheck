@@ -2,7 +2,7 @@
 
 **sitesafecheck.com** — a free, passive website security check for small businesses, built by [Nick Castro](https://nickcastrobuilds.com).
 
-A visitor enters their website, confirms they own it (or are authorized to test it), and gets a plain-English report of common, publicly visible security gaps: what was found (with the real evidence), what it means, how to fix it, a transparent 0–100 score, and an A–F grade. The report ends with an honest offer: Nick fixes the common configuration gaps; anything beyond that is referred out.
+A visitor enters their website, confirms they own it (or are authorized to test it), and gets a plain-English report of common, publicly visible security gaps: what was found (with the real evidence), what it means, a short hedged "worst case" line, what kind of change fixes it (deliberately no copy-paste instructions), a transparent 0–100 score, and an A–F grade. The report ends with an honest offer: Nick fixes the common configuration gaps; anything beyond that is referred out.
 
 ## What it checks (passive only)
 

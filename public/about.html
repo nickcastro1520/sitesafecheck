@@ -34,7 +34,7 @@
 </header>
 <main id="main" class="wrap page">
 <h1>About SiteSafeCheck</h1>
-<p>SiteSafeCheck is a free website security check for small businesses. You enter your website, and it reports common security gaps in plain English: what it found, what that means for you and your customers, and how to fix it.</p>
+<p>SiteSafeCheck is a free website security check for small businesses. You enter your website, and it reports common security gaps in plain English: what it found, what that means for you and your customers, the realistic worst case if it's left alone, and what kind of change fixes it.</p>
 
 <h2>What it checks</h2>
 <ul>
@@ -57,7 +57,7 @@
 <p>Every report starts at 100. Each failed check subtracts 15 points (high severity), 8 (medium), or 3 (low). Warnings subtract 8, 4, or 1. Informational results and checks we couldn't complete subtract nothing. Any high-severity failure, like an untrusted certificate or an exposed <code>.env</code> file, caps the score at 69. Grades: A is 90+, B 80+, C 70+, D 60+, and F below 60. Each report shows exactly which checks cost points.</p>
 
 <h2>The AI part</h2>
-<p>The findings come from plain code, not AI. After the scan, one request to Google's Gemini rewrites the findings that need attention into plain English, tailored to your platform when we can tell what it is. The AI can't add or change findings. If it's unavailable, or says something we don't allow (like calling a site "secure"), we use explanations written by hand.</p>
+<p>The findings come from plain code, not AI. After the scan, one request to Google's Gemini rewrites the findings that need attention into plain English, with a short, truthful "worst case" line for each one. The AI can't add or change findings. If it's unavailable, or says something we don't allow (like calling a site "secure", quoting statistics, or claiming a site was hacked), we use explanations written by hand. Each report says what kind of change fixes an issue (for example, a hosting setting or a DNS record), not step-by-step instructions.</p>
 
 <h2>Who built it</h2>
 <p>SiteSafeCheck was built by <a href="https://nickcastrobuilds.com">Nick Castro</a>, a web developer who builds websites for small businesses (<a href="https://www.linkedin.com/in/nicolas-castro-4081545b">LinkedIn</a>).</p>

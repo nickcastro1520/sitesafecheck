@@ -1,4 +1,5 @@
 import test from "node:test";
+import { SNIPPET, cleanWorst } from "../api/_lib/explain.js";
 import assert from "node:assert/strict";
 import { scoreFindings, gradeFor, WEIGHTS, WARN_WEIGHTS, HIGH_CAP } from "../api/_lib/score.js";
 import { CATALOG, fallbackText } from "../api/_lib/catalog.js";
@@ -38,7 +39,15 @@ test("every check has a title, category, and hand-written copy for every status 
     for (const st of Object.keys(statuses)) {
       const t = fallbackText({ id, status: st });
       assert.ok(t.what.length > 10, `${id}/${st} what`);
-      if ((st === "fail" || st === "warn") && c.fixBy !== "none") assert.ok(t.fix.length > 10, `${id}/${st} fix`);
+      if ((st === "fail" || st === "warn") && c.fixBy !== "none") {
+        assert.ok(t.fix.length > 10, `${id}/${st} fix`);
+        assert.match(t.fix, /^Fixed /, `${id}/${st} fix is a short "How it's fixed" line`);
+        assert.ok(!SNIPPET.test(t.fix), `${id}/${st} fix has no snippet: ${t.fix}`);
+        assert.ok(t.worst.length > 20, `${id}/${st} worst`);
+        assert.equal(cleanWorst(t.worst), t.worst, `${id}/${st} worst passes the same filters as AI text`);
+      }
+      if (st === "pass" || st === "info") assert.equal(t.worst, "", `${id}/${st} has no worst case`);
+      assert.ok(!SNIPPET.test(t.what), `${id}/${st} what has no snippet: ${t.what}`);
     }
   }
 });
