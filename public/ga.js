@@ -8,8 +8,17 @@
   window.gtag = gtag;
   gtag("js", new Date());
   gtag("config", id, { anonymize_ip: true });
-  var t = document.createElement("script");
-  t.async = true;
-  t.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(id);
-  document.head.appendChild(t);
+  // Load the GA library after first interaction or a short delay, so it never competes with the
+  // first paint. Events (including the page view) queue in dataLayer until it arrives.
+  var loaded = false, evs = ["pointerdown", "keydown", "touchstart", "scroll"];
+  function load() {
+    if (loaded) return; loaded = true;
+    evs.forEach(function (e) { removeEventListener(e, load, true); });
+    var t = document.createElement("script");
+    t.async = true;
+    t.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(id);
+    document.head.appendChild(t);
+  }
+  evs.forEach(function (e) { addEventListener(e, load, { capture: true, passive: true, once: true }); });
+  addEventListener("load", function () { setTimeout(load, 2500); });
 })();
