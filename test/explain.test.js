@@ -42,6 +42,7 @@ test("ONE batched call explains every non-passing finding; passes keep hand-writ
   const prompt = calls[0].body.contents[0].parts[0].text;
   assert.ok(prompt.includes('"id":"hsts"') && prompt.includes('"id":"dmarc"') && !prompt.includes('"id":"cert_valid"'));
   const get = (id) => r.findings.find((f) => f.id === id);
+  assert.ok(prompt.includes('"baseline":"Someone on the same public Wi-Fi could intercept'), "the hand-written worst case anchors the AI's seriousness");
   assert.ok(prompt.includes('"worst":"..."') && !prompt.includes('"fix":"..."'), "same single call asks for the worst case, never for a fix");
   assert.equal(get("hsts").textSource, "ai");
   assert.equal(get("hsts").fix, "Fixed with a server or hosting configuration change (adding a security header).", "How it's fixed always comes from the catalog");
