@@ -65,3 +65,29 @@ test("report UI: red Worst case line with a text label, short How it's fixed lin
     assert.doesNotMatch(t, /how to fix|v=spf1|v=DMARC1|max-age=/i, page);
   }
 });
+
+test("home page: keyword title, one H1, low-friction scan form, trust lines, sample report preview", async () => {
+  assert.match(html, /<title>Free Website Security Check for Small Businesses \| SiteSafeCheck<\/title>/);
+  assert.match(html, /<meta name="description" content="Free website security check for small businesses\./);
+  assert.equal((html.match(/<h1[\s>]/g) || []).length, 1);
+  assert.match(html, /<meta property="og:title" content="Free Website Security Check/);
+  assert.doesNotMatch(html, /type="checkbox"/, "no required checkbox before scanning");
+  assert.match(html, /By scanning, you confirm you own or manage this site/);
+  assert.match(html, /id="go">Scan my site free</);
+  for (const t of ["Free", "No signup", "Takes about 30 seconds", "Passive checks only (we never attack your site)"]) assert.ok(html.includes(`<li>${t}</li>`), t);
+  const form = html.slice(html.indexOf('<form class="scan"'), html.indexOf("</form>"));
+  assert.match(form, /id="demo">See a sample report</, "sample report link sits by the button");
+  const demo = JSON.parse(await readFile(new URL("../public/demo.json", import.meta.url), "utf8"));
+  const sample = html.slice(html.indexOf('id="sample"'), html.indexOf('id="what"'));
+  assert.match(sample, new RegExp(`gradebox g${demo.score.grade}`));
+  assert.match(sample, /href="\/\?example"/);
+  const ids = [...sample.matchAll(/data-id="([a-z_]+)"/g)].map((m) => m[1]);
+  assert.ok(ids.length >= 2 && ids.length <= 3);
+  for (const id of ids) {
+    const f = demo.findings.find((x) => x.id === id);
+    assert.ok(sample.includes(f.title) && sample.includes(f.worst.replace(/'/g, "&#39;")), `preview for ${id} matches the example report`);
+  }
+  const app = await readFile(new URL("../public/app.js", import.meta.url), "utf8");
+  assert.match(app, /authorized: true, confirmation: "submit_notice_v1"/);
+  assert.match(app, /min-width: 900px\) and \(pointer: fine\)/, "autofocus on desktop only");
+});

@@ -34,7 +34,7 @@ test("GET reports status without secrets", async () => {
   delete process.env.GEMINI_API_KEY;
 });
 
-test("requires the ownership/authorization checkbox", async () => {
+test("requires the ownership/authorization confirmation (authorized: true)", async () => {
   const r = await post({ url: "example.com" });
   assert.equal(r.status, 400);
   assert.equal((await r.json()).error, "authorization_required");
@@ -75,4 +75,18 @@ test("scans, caches per domain, and rate limits fresh scans per IP", async () =>
   assert.ok(r.headers.get("retry-after"));
   assert.equal((await post({ url: "fourth.com", authorized: true }, { ip: "3.3.3.3" })).status, 200, "other visitors unaffected");
   assert.equal((await post({ url: "first.com", authorized: true }, { ip: "2.2.2.2" })).status, 200, "cached domains still load for a limited IP");
+});
+
+test("records the visitor's confirmation and accepts any common input form", async () => {
+  const logs = []; const orig = console.log; console.log = (s) => logs.push(String(s));
+  try {
+    for (const [url, host] of [["Logged-One.com", "logged-one.com"], ["www.logged-two.com", "www.logged-two.com"], ["http://logged-three.com/about?x=1", "logged-three.com"], ["HTTPS://WWW.Logged-Four.com/", "www.logged-four.com"]]) {
+      const r = await post({ url, authorized: true, confirmation: "submit_notice_v1" }, { ip: "7.7.7." + host.length });
+      assert.equal(r.status, 200, url);
+      assert.equal((await r.json()).report.host, host);
+    }
+  } finally { console.log = orig; }
+  const rec = logs.map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter((x) => x && x.evt === "scan_authorized");
+  assert.equal(rec.length, 4);
+  assert.ok(rec.every((x) => x.confirmation === "submit_notice_v1" && x.ip && !x.ip.includes("7.7.7")), "confirmation recorded with a hashed IP only");
 });

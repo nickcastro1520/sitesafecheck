@@ -68,6 +68,11 @@ export async function POST(request) {
   const hour = new Date(now).toISOString().slice(0, 13);
   const win = Math.floor(now / 600000);
 
+  // Record the visitor's ownership/permission confirmation (the form says "By scanning, you confirm
+  // you own or manage this site"; the API still refuses requests without authorized: true).
+  const confirmation = typeof body.confirmation === "string" ? body.confirmation.replace(/[^\w.-]/g, "").slice(0, 40) : "api";
+  console.log(JSON.stringify({ evt: "scan_authorized", host: target.host, confirmation, ip: ipH, at: new Date(now).toISOString() }));
+
   if ((await incr(`rlb:${win}:${ipH}`, 700)) > c.burst) return json({ error: "rate_limited", message: "Too many requests. Please wait a few minutes." }, 429, { "Retry-After": "600" });
 
   const cacheKey = `scan:v2:${target.host}`;

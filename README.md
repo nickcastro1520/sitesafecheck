@@ -63,7 +63,7 @@ public/demo.json       the labeled example report (built by scripts/build-demo.m
 
 ## Abuse and cost limits
 
-- Ownership/authorization checkbox required (`authorized: true`), plus a honeypot field and a same-origin check on browser POSTs.
+- Ownership/authorization confirmation required (`authorized: true`; the form says "By scanning, you confirm you own or manage this site" and each confirmation is logged as `scan_authorized` with a hashed IP), plus a honeypot field and a same-origin check on browser POSTs.
 - Per IP: `RATE_LIMIT_PER_HOUR` (10) and `RATE_LIMIT_PER_DAY` (30) fresh scans, `RATE_LIMIT_BURST` (30 requests / 10 min, including cache hits).
 - Global: `DAILY_CAP` (1500 fresh scans/day), `AI_DAILY_CAP` (300 Gemini calls/day; over the cap reports use hand-written copy).
 - Per domain: results cached `SCAN_CACHE_SECONDS` (600) and concurrent scans of the same domain share one run, so the tool can't be used to hammer a site.

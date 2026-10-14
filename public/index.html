@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SiteSafeCheck: Free Website Security Check for Small Businesses</title>
-<meta name="description" content="Free, passive website security check for small businesses. Checks HTTPS and SSL, security headers, SPF/DKIM/DMARC email spoofing protection, exposed files, and cookies, with a plain-English fix list.">
+<title>Free Website Security Check for Small Businesses | SiteSafeCheck</title>
+<meta name="description" content="Free website security check for small businesses. Scan your site in about 30 seconds: HTTPS and SSL, security headers, email spoofing protection, and exposed files, explained in plain English. No signup.">
 <link rel="canonical" href="https://sitesafecheck.com/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="author" content="Nick Castro">
@@ -18,8 +18,8 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SiteSafeCheck">
 <meta property="og:url" content="https://sitesafecheck.com/">
-<meta property="og:title" content="Is your website leaving the door open? Free security check">
-<meta property="og:description" content="A free, passive check of your website's HTTPS, security headers, email spoofing protection, and exposed files, explained in plain English.">
+<meta property="og:title" content="Free Website Security Check for Small Businesses | SiteSafeCheck">
+<meta property="og:description" content="Scan your website free in about 30 seconds. A passive check of HTTPS, security headers, email spoofing protection, and exposed files, explained in plain English. No signup.">
 <meta property="og:image" content="https://sitesafecheck.com/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -27,7 +27,7 @@
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Free website security check for small businesses">
-<meta name="twitter:description" content="Passive check of HTTPS, security headers, SPF/DMARC, and exposed files, with a plain-English fix list.">
+<meta name="twitter:description" content="Scan your website free in about 30 seconds: HTTPS, security headers, SPF/DMARC, and exposed files, explained in plain English. No signup.">
 <meta name="twitter:image" content="https://sitesafecheck.com/og.png">
 <meta name="twitter:image:alt" content="SiteSafeCheck: free website security check for small businesses, with a sample A to F grade">
 <link rel="stylesheet" href="/styles.css">
@@ -117,22 +117,22 @@
 <main id="main">
 <section class="hero" aria-labelledby="h1">
  <div class="wrap">
-  <span class="pill">Free · Passive · Plain English</span>
-  <h1 id="h1">Is your website leaving the door open?</h1>
-  <p class="lede">A free security check for small-business websites. In about 15 seconds you get the common security gaps, what each one means, the worst case if it's left alone, and what kind of fix it needs.</p>
+  <h1 id="h1">Free website security check for small businesses</h1>
+  <p class="lede">Find the common security gaps on your website in about 30 seconds, explained in plain English.</p>
   <form class="scan" id="scan-form" novalidate>
    <label class="lbl" for="url">Your website address</label>
    <div class="row">
-    <input type="text" id="url" name="url" inputmode="url" autocomplete="url" autocapitalize="off" spellcheck="false" placeholder="yourbusiness.com" required aria-describedby="url-help form-err">
-    <button class="btn btn-go" type="submit" id="go">Run free check</button>
+    <input type="text" id="url" name="url" inputmode="url" autocomplete="url" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="yourbusiness.com" required aria-describedby="consent form-err">
+    <button class="btn btn-go" type="submit" id="go">Scan my site free</button>
    </div>
-   <span id="url-help" class="sr">Enter a domain like yourbusiness.com</span>
    <div class="hp" aria-hidden="true"><label for="company_website">Leave this empty</label><input type="text" id="company_website" name="company_website" tabindex="-1" autocomplete="off"></div>
-   <label class="check" for="authorized"><input type="checkbox" id="authorized" name="authorized" required> <span>I own this website or have permission to check it.</span></label>
-   <p class="fine">Scans are passive: we load your public home page, read its headers and certificate, look up public DNS records, and request a few well-known file paths, like a normal visitor. No logins, no attack traffic. Only check sites you own or are authorized to test.</p>
+   <p class="consent" id="consent">By scanning, you confirm you own or manage this site, or have permission to check it.</p>
+   <ul class="trust" aria-label="About the scan">
+    <li>Free</li><li>No signup</li><li>Takes about 30 seconds</li><li>Passive checks only (we never attack your site)</li>
+   </ul>
    <p class="err" id="form-err" role="alert"></p>
+   <p class="alt"><button type="button" class="linkbtn" id="demo">See a sample report</button></p>
   </form>
-  <p class="alt">Want to see one first? <button type="button" class="linkbtn" id="demo">View an example report</button></p>
   <div id="progress" hidden>
    <p class="sr" id="progress-live" aria-live="polite"></p>
    <ol id="progress-list"></ol>
@@ -141,6 +141,22 @@
 </section>
 
 <section id="report" class="wrap" hidden aria-live="polite" aria-busy="false"></section>
+
+<section class="band sample" id="sample" aria-labelledby="sample-h">
+ <div class="wrap">
+  <h2 id="sample-h">What a report looks like</h2>
+  <p class="sub">A sample report for a made-up bakery website. Every issue shows the evidence, what it means, the worst case, and what kind of fix it needs.</p>
+  <div class="sample-box">
+   <div class="sample-grade gradebox gD" role="img" aria-label="Sample grade D, score 61 out of 100"><span class="g">D</span><span class="s">61/100</span></div>
+   <div class="sample-finds">
+    <article class="find s-fail v-medium" data-id="dmarc"><div class="fhead"><h3>DMARC policy</h3><span class="tag t-fail">Needs fixing</span><span class="tag t-sev">Medium</span></div><p class="worst"><span class="wicon" aria-hidden="true">!</span><span class="lab">Worst case: </span>Anyone could send email that looks like it came from you to your customers, like a fake invoice asking for payment.</p></article>
+    <article class="find s-fail v-medium" data-id="directory_listing"><div class="fhead"><h3>Directory listing</h3><span class="tag t-fail">Needs fixing</span><span class="tag t-sev">Medium</span></div><p class="worst"><span class="wicon" aria-hidden="true">!</span><span class="lab">Worst case: </span>Anyone could browse and download every file in those folders, including ones you never meant to publish.</p></article>
+    <article class="find s-fail v-medium" data-id="csp"><div class="fhead"><h3>Content-Security-Policy</h3><span class="tag t-fail">Needs fixing</span><span class="tag t-sev">Medium</span></div><p class="worst"><span class="wicon" aria-hidden="true">!</span><span class="lab">Worst case: </span>If a plugin or form bug ever let a malicious script onto a page, the browser could run it and it could steal what visitors type.</p></article>
+   </div>
+  </div>
+  <p class="sample-more"><a class="btn btn-dark" href="/?example" id="sample-link">See the full sample report</a></p>
+ </div>
+</section>
 
 <section class="band" id="what" aria-labelledby="what-h">
  <div class="wrap">
@@ -161,7 +177,7 @@
   <h2 id="how-h">How it works</h2>
   <p class="sub">No sign-up and nothing to install.</p>
   <ol class="steps">
-   <li><strong>Enter your website</strong><span>Confirm it's yours (or you have permission), then start the check.</span></li>
+   <li><strong>Enter your website</strong><span>Any form works: yourbusiness.com, www, or a full link. Only scan sites you own, manage, or have permission to check.</span></li>
    <li><strong>We look, we don't poke</strong><span>Plain code reads what any visitor could see: headers, certificate, public DNS, and a few well-known paths.</span></li>
    <li><strong>Get a plain-English report</strong><span>A 0–100 score with the math shown, an A–F grade, what each issue means, the worst case, and what kind of fix it needs.</span></li>
   </ol>

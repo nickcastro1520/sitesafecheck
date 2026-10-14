@@ -19,7 +19,7 @@
     return el;
   }
 
-  const form = $("#scan-form"), input = $("#url"), auth = $("#authorized"), btn = $("#go"), err = $("#form-err");
+  const form = $("#scan-form"), input = $("#url"), btn = $("#go"), err = $("#form-err");
   const progress = $("#progress"), plist = $("#progress-list"), plive = $("#progress-live"), out = $("#report");
   const STEPS = ["Looking up the domain", "Checking HTTPS and the certificate", "Reading security headers", "Checking email spoofing protection (SPF, DKIM, DMARC)", "Looking for exposed files and version banners", "Writing your plain-English report"];
   let timer = null;
@@ -38,6 +38,9 @@
   }
   function stopProgress() { clearInterval(timer); timer = null; progress.hidden = true; plive.textContent = ""; }
 
+  // Desktop only: put the cursor in the box (on phones it would pop the keyboard over the page).
+  if (!location.search && matchMedia("(min-width: 900px) and (pointer: fine)").matches) { try { input.focus({ preventScroll: true }); } catch {} }
+
   const params = new URLSearchParams(location.search);
   if (params.get("url")) {
     input.value = params.get("url").slice(0, 200);
@@ -47,15 +50,15 @@
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     err.textContent = "";
-    const url = input.value.trim();
+    // Accept any form people paste: bare domain, www, http(s), paths. The server normalizes it.
+    const url = input.value.trim().replace(/^[<"'(\[]+|[>"')\],;.]+$/g, "");
     if (!url) { err.textContent = "Enter your website address, like yourbusiness.com."; input.focus(); return; }
-    if (!auth.checked) { err.textContent = "Please confirm you own this website or have permission to check it."; auth.focus(); return; }
     btn.disabled = true; btn.textContent = "Checking…";
     out.hidden = true; out.setAttribute("aria-busy", "true");
     startProgress();
     track("scan_started");
     try {
-      const r = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url, authorized: true, company_website: $("#company_website").value }) });
+      const r = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url, authorized: true, confirmation: "submit_notice_v1", company_website: $("#company_website").value }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok || !j.report) {
         err.textContent = j.message || (r.status === 429 ? "Too many checks right now. Please try again later." : "Something went wrong. Please try again.");
@@ -69,7 +72,7 @@
       err.textContent = "Connection lost. Check your internet and try again.";
     } finally {
       stopProgress();
-      btn.disabled = false; btn.textContent = "Run free check";
+      btn.disabled = false; btn.textContent = "Scan my site free";
       out.setAttribute("aria-busy", "false");
     }
   });
