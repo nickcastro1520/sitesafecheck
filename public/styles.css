@@ -189,3 +189,4 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
 .spin{flex:none;width:14px;height:14px;border:2px solid #9bb3e0;border-top-color:#1d3a6e;border-radius:50%;animation:sscspin .8s linear infinite}
 @keyframes sscspin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.scan .alt-or{color:#475569}
