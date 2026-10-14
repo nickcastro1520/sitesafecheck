@@ -23,6 +23,7 @@
   const progress = $("#progress"), plist = $("#progress-list"), plive = $("#progress-live"), out = $("#report");
   const STEPS = ["Looking up the domain", "Checking HTTPS and the certificate", "Reading security headers", "Checking email spoofing protection (SPF, DKIM, DMARC)", "Looking for exposed files and version banners", "Writing your plain-English report"];
   let timer = null;
+  let source = "form";
 
   function startProgress() {
     plist.replaceChildren(...STEPS.map((s) => h("li", {}, h("span", { class: "dot", "aria-hidden": "true" }), s)));
@@ -45,6 +46,12 @@
   if (params.get("url")) {
     // Prefill only (never auto-run): keep plain host/URL characters.
     input.value = params.get("url").replace(/[^A-Za-z0-9.\-:/_?=&%~]/g, "").slice(0, 200);
+    // A shared link (/r -> "Run this check") lands here prefilled. Never auto-run: the visitor still taps Scan.
+    if (params.get("scan") === "shared" && input.value) {
+      source = "shared";
+      const note = h("p", { class: "shared-note", role: "status" }, "Shared check for ", h("strong", { text: input.value }), ". Tap ", h("strong", { text: "Scan my site free" }), " to run it.");
+      $("#consent").before(note);
+    }
     try { history.replaceState(null, "", location.pathname + location.hash); } catch {} // keep the domain out of analytics page URLs
   }
 
@@ -74,10 +81,9 @@
     return "server";
   }
 
-  let source = "form";
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (e.submitter !== tryBtn && !form.dataset.demo) source = "form";
+    if (e.submitter !== tryBtn && !form.dataset.demo && source !== "shared") source = "form";
     delete form.dataset.demo;
     err.replaceChildren(); delete err.dataset.kind;
     // Accept any form people paste: bare domain, www, http(s), paths. The server normalizes it.
@@ -89,7 +95,7 @@
     track("scan_started", { source });
     const t0 = performance.now();
     try {
-      const r = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url, authorized: true, confirmation: source === "demo" ? "demo_sample_site" : "submit_notice_v1", stream: true, company_website: $("#company_website").value }), signal: AbortSignal.timeout(70000) });
+      const r = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url, authorized: true, confirmation: source === "demo" ? "demo_sample_site" : source === "shared" ? "shared_link_v1" : "submit_notice_v1", stream: true, company_website: $("#company_website").value }), signal: AbortSignal.timeout(70000) });
       if (!r.ok) {
         const j = await r.json().catch(() => ({}));
         const kind = errorKind(r.status, j.error);
@@ -199,7 +205,7 @@
     const r = rep.rules;
     return h("details", { class: "scorebox card" },
       h("summary", { text: "How the score works" }),
-      h("p", { text: `Start at ${r.start}. Each failed check subtracts ${r.fail.high} (high), ${r.fail.medium} (medium), or ${r.fail.low} (low) points. Warnings subtract ${r.warn.high}, ${r.warn.medium}, or ${r.warn.low}. Info and "couldn't check" items subtract nothing. Any high-severity failure caps the score at ${r.highCap}. Grades: ${r.grades.map((g) => `${g.grade} ${g.min}+`).join(", ").replace(" 0+", " below 60")}.` }),
+      h("p", { text: `Start at ${r.start}. Each failed check subtracts ${r.fail.high} (high), ${r.fail.medium} (medium), or ${r.fail.low} (low) points. Warnings subtract ${r.warn.high}, ${r.warn.medium}, or ${r.warn.low}. Info and "couldn't check" items subtract nothing. Any high-severity failure caps the score at ${r.highCap}. Checks your hosting platform controls cost nothing, and when the home page has no login, password field, cart or checkout, Content-Security-Policy, Permissions-Policy and Referrer-Policy are "Recommended" (at most 3 points each, never the cap). Grades: ${r.grades.map((g) => `${g.grade} ${g.min}+`).join(", ").replace(" 0+", " below 60")}.` }),
       rows.length ? h("table", {}, h("thead", {}, h("tr", {}, h("th", { scope: "col", text: "Check" }), h("th", { scope: "col", text: "Result" }), h("th", { scope: "col", text: "Points" }))), h("tbody", {}, rows),
         h("tfoot", {}, h("tr", {}, h("th", { scope: "row", text: "Score" }), h("td", { text: rep.score.capped ? `capped at ${r.highCap} (high-severity failure)` : "" }), h("td", { text: String(rep.score.score) })))) : h("p", { text: "Nothing was deducted." }));
   }
@@ -249,6 +255,32 @@
       h("p", { class: "small", text: SCOPE_NOTE }));
   }
 
+  // No report storage is configured, so a share link carries the domain and grade and offers to re-run the check.
+  function shareUrl(rep) {
+    const d = (rep.createdAt || "").slice(0, 10);
+    return `${location.origin}/r?url=${encodeURIComponent(rep.host)}&g=${rep.score.grade}&s=${rep.score.score}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ""}`;
+  }
+  function shareButtons(rep) {
+    const url = shareUrl(rep);
+    const status = h("span", { class: "share-status", role: "status", "aria-live": "polite" });
+    const copy = async (method) => {
+      let ok = false;
+      try { await navigator.clipboard.writeText(url); ok = true; } catch {
+        try { const t = h("textarea", { class: "sr-copy", "aria-hidden": "true" }); t.value = url; document.body.append(t); t.select(); ok = document.execCommand("copy"); t.remove(); } catch {}
+      }
+      status.textContent = ok ? "Link copied." : `Copy this link: ${url}`;
+      track("share_click", { method, ok });
+    };
+    const kids = [h("button", { type: "button", class: "btn btn-ghost", onclick: () => copy("copy"), text: "Copy link to this report" })];
+    kids.push(h("button", { type: "button", class: "btn btn-ghost", onclick: async () => {
+      if (navigator.share) {
+        try { await navigator.share({ title: `Security report for ${rep.host}: ${rep.score.grade}`, text: `${rep.host} got a ${rep.score.grade} (${rep.score.score}/100) on SiteSafeCheck.`, url }); track("share_click", { method: "web_share", ok: true }); }
+        catch (e) { if (!e || e.name !== "AbortError") copy("share_fallback"); }
+      } else copy("share_fallback");
+    }, text: "Share" }));
+    return [...kids, status];
+  }
+
   function render(rep, { demo = false, cached = false, pending = false, keepPlace = false } = {}) {
     const s = rep.score;
     const cats = rep.categories.map((c) => {
@@ -258,7 +290,7 @@
       const plat = items.filter((f) => f.status === "platform");
       const ok = items.filter((f) => !(f.status === "fail" || f.status === "warn" || f.status === "platform"));
       return h("section", { class: "cat", "aria-labelledby": `cat-${c.id}` },
-        h("h3", { id: `cat-${c.id}` }, c.title, h("span", { class: "cnt", text: bad.length ? `${bad.length} to review` : "no issues found" })),
+        h("h3", { id: `cat-${c.id}` }, c.title, h("span", { class: "cnt", text: bad.length ? `${bad.length} to review` : plat.length && !ok.some((f) => f.status === "pass") ? `controlled by ${plat[0].controlledBy}` : "no issues found" })),
         bad.map(findingEl),
         plat.map(findingEl),
         ok.length ? h("details", { class: "passed" }, h("summary", { text: `${ok.filter((f) => f.status === "pass").length} passed, ${ok.filter((f) => f.status !== "pass").length} info` }), ok.map(findingEl)) : null);
@@ -282,6 +314,7 @@
           h("div", { class: "chips" }, chips))),
       ctaTopEl(rep),
       h("div", { class: "ractions noprint" },
+        demo ? null : shareButtons(rep),
         h("button", { type: "button", class: "btn btn-dark", onclick: () => window.print(), text: "Print / save as PDF" }),
         h("button", { type: "button", class: "btn btn-ghost", onclick: () => { out.hidden = true; input.value = ""; window.scrollTo({ top: 0 }); input.focus(); }, text: "Check another site" })),
       cats,

@@ -197,3 +197,10 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
 .pnote{color:#475569;margin:6px 0 0}
 .platform-line{font-weight:600;margin:6px 0}
 .aivis{margin:18px 0 0;font-size:1rem}
+.shared-note{margin:10px 0 0;padding:8px 12px;border-radius:8px;background:#ecfdf3;color:#05603a;font-size:15px}
+.share-status{flex-basis:100%;font-size:14px;color:var(--mut);word-break:break-all}
+.share-status:empty{display:none}
+.sr-copy{position:fixed;left:-9999px;top:0;opacity:0}
+.shared .kicker{margin:0 0 10px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.06em;font-size:13px}
+.shared .rhead{margin:0 0 18px}
+.shared h1{margin:0 0 6px}

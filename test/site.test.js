@@ -89,7 +89,7 @@ test("home page: keyword title, one H1, low-friction scan form, trust lines, sam
     assert.ok(sample.includes(f.title) && sample.includes(f.worst.replace(/'/g, "&#39;")), `preview for ${id} matches the example report`);
   }
   const app = await readFile(new URL("../public/app.js", import.meta.url), "utf8");
-  assert.match(app, /authorized: true, confirmation: source === "demo" \? "demo_sample_site" : "submit_notice_v1"/);
+  assert.match(app, /authorized: true, confirmation: source === "demo" \? "demo_sample_site" : source === "shared" \? "shared_link_v1" : "submit_notice_v1"/);
   assert.match(app, /min-width: 900px\) and \(pointer: fine\)/, "autofocus on desktop only");
 });
 
