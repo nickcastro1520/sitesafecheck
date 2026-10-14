@@ -43,7 +43,8 @@
 
   const params = new URLSearchParams(location.search);
   if (params.get("url")) {
-    input.value = params.get("url").slice(0, 200);
+    // Prefill only (never auto-run): keep plain host/URL characters.
+    input.value = params.get("url").replace(/[^A-Za-z0-9.\-:/_?=&%~]/g, "").slice(0, 200);
     try { history.replaceState(null, "", location.pathname + location.hash); } catch {} // keep the domain out of analytics page URLs
   }
 
@@ -169,12 +170,18 @@
   const fmtDate = (iso) => { try { return new Date(iso).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }); } catch { return iso; } };
 
   function findingEl(f) {
+    if (f.status === "platform") {
+      return h("article", { class: "find s-platform" },
+        h("div", { class: "fhead" }, h("h4", { text: f.title }), h("span", { class: "tag t-platform", text: `Controlled by ${f.controlledBy}` })),
+        f.evidence ? h("p", { class: "ev", text: f.evidence }) : null,
+        h("p", { class: "pnote", text: f.what }));
+    }
     const bad = f.status === "fail" || f.status === "warn";
     const card = h("article", { class: `find s-${f.status} v-${f.severity}` },
       h("div", { class: "fhead" },
         h("h4", { text: f.title }),
         h("span", { class: `tag t-${f.status}`, text: STATUS[f.status] || f.status }),
-        bad && SEV[f.severity] ? h("span", { class: "tag t-sev", text: SEV[f.severity] }) : null),
+        bad && f.recommended ? h("span", { class: "tag t-rec", text: "Recommended" }) : bad && SEV[f.severity] ? h("span", { class: "tag t-sev", text: SEV[f.severity] }) : null),
       h("p", { class: "ev", text: f.evidence }));
     if (f.what) card.append(h("p", {}, h("span", { class: "lab", text: bad ? "What this means: " : "" }), f.what));
     if (bad && f.worst) card.append(h("p", { class: "worst" }, h("span", { class: "wicon", "aria-hidden": "true", text: "!" }), h("span", { class: "lab", text: "Worst case: " }), f.worst));
@@ -248,10 +255,12 @@
       const items = rep.findings.filter((f) => f.category === c.id);
       if (!items.length) return null;
       const bad = items.filter((f) => f.status === "fail" || f.status === "warn");
-      const ok = items.filter((f) => !(f.status === "fail" || f.status === "warn"));
+      const plat = items.filter((f) => f.status === "platform");
+      const ok = items.filter((f) => !(f.status === "fail" || f.status === "warn" || f.status === "platform"));
       return h("section", { class: "cat", "aria-labelledby": `cat-${c.id}` },
         h("h3", { id: `cat-${c.id}` }, c.title, h("span", { class: "cnt", text: bad.length ? `${bad.length} to review` : "no issues found" })),
         bad.map(findingEl),
+        plat.map(findingEl),
         ok.length ? h("details", { class: "passed" }, h("summary", { text: `${ok.filter((f) => f.status === "pass").length} passed, ${ok.filter((f) => f.status !== "pass").length} info` }), ok.map(findingEl)) : null);
     });
     const chips = [];
@@ -268,6 +277,7 @@
           heading,
           h("p", { class: "rmeta", text: `Checked ${fmtDate(rep.createdAt)}${cached ? " (saved result from the last few minutes)" : ""}${rep.meta?.finalUrl ? ` · ${rep.meta.finalUrl}` : ""}${rep.meta?.cms ? ` · ${rep.meta.cms}` : ""}` }),
           pending ? h("p", { class: "aiwait", role: "status" }, h("span", { class: "spin", "aria-hidden": "true" }), "Writing plain-English explanations… The findings below are ready now; the wording will update in a few seconds.") : null,
+          rep.meta && rep.meta.platform ? h("p", { class: "platform-line", text: `Your site runs on ${rep.meta.platform}.` }) : null,
           h("p", { class: "summary", text: rep.summary }),
           h("div", { class: "chips" }, chips))),
       ctaTopEl(rep),
@@ -277,6 +287,7 @@
       cats,
       ctaEl(rep),
       scoreTable(rep),
+      h("p", { class: "aivis noprint" }, "Does AI recommend your business? ", h("a", { href: "https://doesaiknowmybusiness.com", "data-cta": "aivis", text: "Run a free AI visibility check →" })),
       h("p", { class: "scope", text: `${rep.scope} A passive check can't prove a site is secure; it shows common gaps that are visible from the outside.${rep.ai?.used ? " Explanations were written with help from Google Gemini, based only on the evidence shown." : ""}` })].flat().filter(Boolean));
     out.hidden = false;
     out.setAttribute("aria-busy", pending ? "true" : "false");

@@ -5,11 +5,11 @@
 // something we don't trust. fixBy: "nick" = within what Nick offers; "refer" = referred out; "none" = informational.
 
 export const CATEGORIES = [
-  { id: "https", title: "HTTPS & certificate" },
-  { id: "headers", title: "Security headers" },
   { id: "email", title: "Email spoofing protection" },
+  { id: "https", title: "HTTPS & certificate" },
   { id: "leaks", title: "Information leaks" },
   { id: "cookies", title: "Cookies" },
+  { id: "headers", title: "Security headers" },
 ];
 
 // worst: one short, truthful "worst case" sentence per problem status (warn/fail), scaled to severity.

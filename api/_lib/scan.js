@@ -101,7 +101,7 @@ export async function collect(input, { now = Date.now(), budgetMs = 24000 } = {}
     const offsite = !isSameSite(fu.hostname, root);
     const html = /html|xml|^$/i.test(final.headers["content-type"] || "") ? final.body : "";
     const altHtml = httpR.final && httpR.final !== final ? httpR.final.body || "" : "";
-    meta = { ...meta, https, offsite, cms: C.detectCms(html, final.headers) || (offsite ? "" : C.detectCms(altHtml, httpR.final?.headers || {})), server: (final.headers.server || "").slice(0, 60), ms: final.ms };
+    meta = { ...meta, https, offsite, cms: C.detectCms(html, final.headers) || (offsite ? "" : C.detectCms(altHtml, httpR.final?.headers || {})), platform: C.detectPlatform(html, final.headers), sensitive: C.detectSensitive(html), server: (final.headers.server || "").slice(0, 60), ms: final.ms };
     findings.push(C.analyzeMixed({ https, html, csp: final.headers["content-security-policy"], truncated: final.truncated }));
     findings.push(...C.analyzeHeaders(final.headers, { https }));
     findings.push(C.analyzeBanners(final.headers, html));
@@ -151,9 +151,30 @@ export function decorate(findings) {
     .sort((a, b) => CAT_ORDER[a.category] - CAT_ORDER[b.category] || ID_ORDER[a.id] - ID_ORDER[b.id]);
 }
 
+// Rules applied before scoring.
+// 3) Hosted platforms control these headers: shown as "Controlled by <platform>", no deduction.
+// 4) No login, password field, or cart/checkout on the home page: CSP, Permissions-Policy and
+//    Referrer-Policy are "Recommended" (low severity, never the high cap). Rule 3 wins.
+export const PLATFORM_HEADERS = ["csp", "hsts", "x_frame_options", "x_content_type_options", "referrer_policy", "permissions_policy"];
+export const RECOMMENDED = ["csp", "permissions_policy", "referrer_policy"];
+export const PLATFORM_NOTE = "Your host controls this setting. You can't change it yourself, and it isn't something you need to pay to fix.";
+export function applyRules(findings, meta = {}) {
+  const platform = meta.platform || "";
+  const sensitive = meta.sensitive ? meta.sensitive.any : true; // unknown: keep full weights
+  return findings.map((f) => {
+    if (platform && PLATFORM_HEADERS.includes(f.id)) {
+      return { ...f, status: "platform", severity: "info", controlledBy: platform, fixBy: "none", origStatus: f.status, origSeverity: f.severity };
+    }
+    if (!sensitive && RECOMMENDED.includes(f.id) && (f.status === "fail" || f.status === "warn")) {
+      return { ...f, severity: "low", recommended: true, origSeverity: f.severity };
+    }
+    return f;
+  });
+}
+
 // Full report: collect + score + explanations.
 export async function buildReport(raw, { useAi = true, now = Date.now() } = {}) {
-  const findings = decorate(raw.findings);
+  const findings = applyRules(decorate(raw.findings), raw.meta);
   const scoreInfo = scoreFindings(findings);
   const ex = await explain(findings, raw.meta, { useAi, scoreInfo });
   return {

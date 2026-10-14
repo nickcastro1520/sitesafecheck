@@ -375,3 +375,28 @@ export function analyzeSecurityTxt(res) {
   }
   return F("security_txt", "info", "info", "No /.well-known/security.txt file. It's optional: it tells security researchers how to report a problem to you.");
 }
+
+// ---------------- hosted platform + sensitive-page detection (passive, from the home page fetch) ----------------
+// Hosted builders where the owner can't set security headers themselves.
+export const PLATFORMS = ["Wix", "Squarespace", "Shopify", "GoDaddy Website Builder", "Webflow", "WordPress.com"];
+export function detectPlatform(html = "", h = {}) {
+  const hv = (k) => String(h[k] || "");
+  const gen = [...String(html).matchAll(/<meta[^>]+name=["']generator["'][^>]*>/gi)].map((m) => m[0]).join(" ");
+  const has = (re) => re.test(html);
+  if (hv("x-wix-request-id") || /pepyaka/i.test(hv("server")) || /Wix\.com/i.test(gen) || has(/static\.wixstatic\.com|static\.parastorage\.com/i)) return "Wix";
+  if (/squarespace/i.test(hv("server")) || /Squarespace/i.test(gen) || has(/static1\.squarespace\.com|assets\.squarespace\.com|images\.squarespace-cdn\.com/i)) return "Squarespace";
+  if (/shopify/i.test(hv("powered-by")) || hv("x-shopid") || hv("x-shopify-stage") || has(/cdn\.shopify\.com|Shopify\.theme\b/i)) return "Shopify";
+  if (/Go ?Daddy Website Builder|Starfield Technologies/i.test(gen) || has(/img1\.wsimg\.com\/(blobby|isteam)|\/\/img1\.wsimg\.com\/isteam/i)) return "GoDaddy Website Builder";
+  if (/Webflow/i.test(gen) || has(/data-wf-site=|assets\.website-files\.com|cdn\.prod\.website-files\.com/i)) return "Webflow";
+  if (/WordPress\.com/i.test(gen) || /^wordpress\.com$/i.test(hv("host-header"))) return "WordPress.com";
+  return "";
+}
+
+// Login form, password field, or cart/checkout on the home page.
+export function detectSensitive(html = "") {
+  const s = String(html);
+  const password = /<input[^>]+type=["']?password/i.test(s);
+  const login = /<form[^>]*(action|id|class|name)=["'][^"']*(log-?in|sign-?in|wp-login|auth)[^"']*["']/i.test(s);
+  const cart = /<(a|form)[^>]+(href|action)=["'][^"']*\/(cart|checkout|basket)(\/|\?|["'])|add[-_ ]to[-_ ]cart|\/checkouts?\/|accelerated-checkout|woocommerce-cart|snipcart/i.test(s);
+  return { password, login, cart, any: password || login || cart };
+}

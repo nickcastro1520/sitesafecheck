@@ -190,3 +190,10 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
 @keyframes sscspin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}}
 .scan .alt-or{color:#475569}
+.find.s-platform{border-left-color:#94a3b8;background:#f8fafc}
+.find.s-platform h4{color:#475569}
+.tag.t-platform{background:#e2e8f0;color:#334155}
+.tag.t-rec{background:#e0f2fe;color:#075985}
+.pnote{color:#475569;margin:6px 0 0}
+.platform-line{font-weight:600;margin:6px 0}
+.aivis{margin:18px 0 0;font-size:1rem}

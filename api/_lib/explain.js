@@ -3,6 +3,7 @@
 // in catalog.js. The AI never adds findings: it can only rewrite text for ids we send it.
 import { ask, isConfigured } from "./gemini.js";
 import { CATALOG, fallbackText } from "./catalog.js";
+const PLATFORM_NOTE = "Your host controls this setting. You can't change it yourself, and it isn't something you need to pay to fix.";
 
 // Words the explanations must never contain: we don't claim safety and don't sell services
 // the passive scan (or Nick) can't back up.
@@ -55,7 +56,7 @@ export function fallbackSummary(findings, scoreInfo, host) {
   const high = bad.filter((f) => f.severity === "high");
   const order = { high: 0, medium: 1, low: 2 };
   const top = [...bad].sort((x, y) => (order[x.severity] ?? 3) - (order[y.severity] ?? 3) || (x.status === "fail" ? -1 : 1))[0];
-  const checks = findings.filter((f) => f.status !== "info" && f.status !== "error").length;
+  const checks = findings.filter((f) => f.status !== "info" && f.status !== "error" && f.status !== "platform").length;
   if (!bad.length) return `${host} passed all ${checks} passive checks we ran, scoring ${scoreInfo.score}/100. That's a good sign, but a passive scan only looks at what's publicly visible, so it can't prove a site is secure. Keep certificates renewing automatically and re-check after site changes.`;
   return `${host} scored ${scoreInfo.score}/100 (grade ${scoreInfo.grade}) on ${checks} passive checks. ${bad.length} item${bad.length === 1 ? "" : "s"} need${bad.length === 1 ? "s" : ""} attention${high.length ? `, including ${high.length} high-priority` : ""}. Start with: ${CATALOG[top.id]?.title || top.id}.`;
 }
@@ -72,6 +73,7 @@ export function cleanWorst(text) {
 }
 
 function attachFallback(f) {
+  if (f.status === "platform") return { ...f, what: PLATFORM_NOTE, fix: "", textSource: "fallback" };
   const t = fallbackText(f);
   const bad = f.status === "fail" || f.status === "warn";
   return { ...f, what: t.what, fix: t.fix, ...(bad && t.worst ? { worst: t.worst, worstSource: "fallback" } : {}), textSource: "fallback" };

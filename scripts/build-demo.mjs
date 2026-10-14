@@ -35,7 +35,7 @@ const findings = [
   C.analyzeDmarc([], `_dmarc.${host}`),
   C.analyzeDkim(C.DKIM_SELECTORS.map((selector) => ({ selector, records: [] })), host),
 ];
-const raw = { host, meta: { host, emailDomain: host, finalUrl: `https://${host}/`, status: 200, https: true, offsite: false, cms: "WordPress", server: headers.server, emailProviders: ["Google Workspace"], ms: 6400 }, findings };
+const raw = { host, meta: { host, emailDomain: host, finalUrl: `https://${host}/`, status: 200, https: true, offsite: false, cms: "WordPress", platform: C.detectPlatform(html, headers), sensitive: C.detectSensitive(html), server: headers.server, emailProviders: ["Google Workspace"], ms: 6400 }, findings };
 const report = await buildReport(raw, { useAi: false, now });
 report.example = true;
 await writeFile(new URL("../public/demo.json", import.meta.url), JSON.stringify(report));
