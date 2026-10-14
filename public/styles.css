@@ -182,3 +182,10 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
  a{color:#000}
 }
 .print-contact{display:none}
+
+.scan .alt{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.btn-try{min-height:44px}
+.aiwait{display:flex;align-items:center;gap:10px;margin:8px 0;padding:8px 12px;border-radius:8px;background:#eef4ff;color:#1d3a6e;font-size:.95rem}
+.spin{flex:none;width:14px;height:14px;border:2px solid #9bb3e0;border-top-color:#1d3a6e;border-radius:50%;animation:sscspin .8s linear infinite}
+@keyframes sscspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}

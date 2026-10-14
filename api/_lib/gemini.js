@@ -5,7 +5,8 @@
 const API = "https://generativelanguage.googleapis.com/v1beta/models";
 
 export const isConfigured = () => Boolean(process.env.GEMINI_API_KEY);
-// Order = what answered fastest with the live key (measured Oct 14, 2026). The model that last
+// Order = what answered with the live key (probed Oct 14, 2026: 3.5-flash-lite 200 in 0.8s;
+// 3.1-flash-lite, 3.5-flash and 3.8-flash 503; 3.1-flash and 3-flash 404). The model that last
 // worked on this warm instance is always tried first; 404/403 models are skipped for 6 hours.
 export const DEFAULT_MODELS = "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.5-flash,gemini-3.8-flash";
 const good = globalThis.__ssc_gm || (globalThis.__ssc_gm = { model: "" });
@@ -80,6 +81,7 @@ export async function ask(opts) {
       if (good.model === model) good.model = "";
       if (e.name === "TimeoutError" || e.name === "AbortError") continue;
       if (e.status === 404 || e.status === 403 || (e.status === 400 && /model|not found|not supported|no longer available|unavailable/i.test(msg))) { block("m:" + model, 6 * HOUR); continue; }
+      if (e.status === 503 || e.status === 500) { block("m:" + model, 10 * 60e3); continue; } // overloaded: skip it for 10 minutes
       if (e.status === 429) {
         if (zeroQuota(msg)) { block("m:" + model, 6 * HOUR); continue; }
         if (/per ?day|PerDay|daily/i.test(msg)) { block("m:" + model, HOUR); continue; }

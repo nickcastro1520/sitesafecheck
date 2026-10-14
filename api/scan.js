@@ -3,7 +3,7 @@
 import { createHash } from "node:crypto";
 import { normalizeTarget, ScanError } from "./_lib/net.js";
 import { collect, buildReport } from "./_lib/scan.js";
-import { isConfigured, ask, DEFAULT_MODELS } from "./_lib/gemini.js";
+import { isConfigured } from "./_lib/gemini.js";
 import { getJSON, setJSON, incr, decr, isPersistent } from "./_lib/store.js";
 
 const num = (v, d) => (Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : d);
@@ -20,19 +20,7 @@ const json = (obj, status = 200, extra = {}) => new Response(JSON.stringify(obj)
 const sha = (s) => createHash("sha256").update(s).digest("hex");
 const inflight = globalThis.__ssc_inflight || (globalThis.__ssc_inflight = new Map());
 
-let lastProbe = 0;
-export async function GET(request) {
-  // TEMPORARY model probe (removed after measuring): one tiny call per model, max once per 10 min per instance.
-  if (request && new URL(request.url).searchParams.get("probe") === "models" && isConfigured() && Date.now() - lastProbe > 600000) {
-    lastProbe = Date.now();
-    const out = [];
-    for (const m of (process.env.GEMINI_MODEL || DEFAULT_MODELS).split(",").map((x) => x.trim()).concat(["gemini-3.1-flash", "gemini-3-flash"])) {
-      const t = Date.now();
-      try { const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY }, body: JSON.stringify({ contents: [{ parts: [{ text: "Say OK" }] }], generationConfig: { maxOutputTokens: 400 } }), signal: AbortSignal.timeout(15000) }); out.push({ m, status: r.status, ms: Date.now() - t }); }
-      catch (e) { out.push({ m, status: e.name, ms: Date.now() - t }); }
-    }
-    return json({ envOverride: Boolean(process.env.GEMINI_MODEL), out });
-  }
+export async function GET() {
   const c = cfg();
   return json({ ok: true, ai: isConfigured(), persistent: isPersistent(), limits: { perHour: c.perHour, perDay: c.perDay }, cacheSeconds: c.cacheSec });
 }

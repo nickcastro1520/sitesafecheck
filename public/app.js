@@ -73,36 +73,74 @@
     return "server";
   }
 
+  let source = "form";
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (e.submitter !== tryBtn && !form.dataset.demo) source = "form";
+    delete form.dataset.demo;
     err.replaceChildren(); delete err.dataset.kind;
     // Accept any form people paste: bare domain, www, http(s), paths. The server normalizes it.
     const url = input.value.trim().replace(/^[<"'(\[]+|[>"')\],;.]+$/g, "");
     if (!url) { showError("empty"); input.focus(); return; }
-    btn.disabled = true; btn.textContent = "Checking…";
+    btn.disabled = true; tryBtn.disabled = true; btn.textContent = "Checking…";
     out.hidden = true; out.setAttribute("aria-busy", "true");
     startProgress();
-    track("scan_started");
+    track("scan_started", { source });
+    const t0 = performance.now();
     try {
-      const r = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url, authorized: true, confirmation: "submit_notice_v1", company_website: $("#company_website").value }), signal: AbortSignal.timeout(70000) });
-      const j = await r.json().catch(() => ({}));
-      if (!r.ok || !j.report) {
+      const r = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url, authorized: true, confirmation: source === "demo" ? "demo_sample_site" : "submit_notice_v1", stream: true, company_website: $("#company_website").value }), signal: AbortSignal.timeout(70000) });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
         const kind = errorKind(r.status, j.error);
         showError(kind, kind === "invalid" || kind === "limited" ? j.message : "");
-        track("scan_failed", { reason: j.error || String(r.status) });
+        track("scan_failed", { reason: j.error || String(r.status), source });
         input.focus();
         return;
       }
-      render(j.report, { cached: j.cached });
-      track("scan_completed", { grade: j.report.score.grade, score: j.report.score.score, cached: Boolean(j.cached) });
+      // NDJSON: the checks arrive first (hand-written copy), then the AI-worded report.
+      let last = null, firstMs = 0;
+      const onMsg = (j) => {
+        if (!j || !j.report) return;
+        last = j;
+        if (j.phase === "checks") {
+          firstMs = Math.round(performance.now() - t0);
+          stopProgress();
+          render(j.report, { cached: j.cached, pending: Boolean(j.report.ai && j.report.ai.pending) });
+        } else render(j.report, { cached: j.cached, keepPlace: Boolean(firstMs) });
+      };
+      if ((r.headers.get("content-type") || "").includes("ndjson") && r.body && r.body.getReader) {
+        const rd = r.body.getReader(), dec = new TextDecoder();
+        let buf = "";
+        for (;;) {
+          const { value, done } = await rd.read();
+          buf += dec.decode(value || new Uint8Array(), { stream: !done });
+          let nl;
+          while ((nl = buf.indexOf("\n")) >= 0) { const line = buf.slice(0, nl); buf = buf.slice(nl + 1); if (line.trim()) onMsg(JSON.parse(line)); }
+          if (done) break;
+        }
+        if (buf.trim()) onMsg(JSON.parse(buf));
+      } else onMsg(await r.json().catch(() => null));
+      if (!last) { showError("server"); track("scan_failed", { reason: "empty", source }); return; }
+      const rep = last.report;
+      track("scan_completed", { grade: rep.score.grade, score: rep.score.score, cached: Boolean(last.cached), source, first_findings_ms: firstMs || Math.round(performance.now() - t0), full_report_ms: Math.round(performance.now() - t0) });
     } catch (ex) {
       showError(ex && ex.name === "TimeoutError" ? "timeout" : "offline");
       track("scan_failed", { reason: ex && ex.name === "TimeoutError" ? "client_timeout" : "network" });
     } finally {
       stopProgress();
-      btn.disabled = false; btn.textContent = "Scan my site free";
+      btn.disabled = false; tryBtn.disabled = false; btn.textContent = "Scan my site free";
       out.setAttribute("aria-busy", "false");
     }
+  });
+
+  // One-tap live demo: a real scan of a public sample site with a few fixable gaps.
+  const DEMO_SITE = "example.com";
+  const tryBtn = $("#try-demo");
+  tryBtn.addEventListener("click", () => {
+    source = "demo"; form.dataset.demo = "1";
+    input.value = DEMO_SITE;
+    track("demo_scan_clicked", { site: DEMO_SITE });
+    form.requestSubmit();
   });
 
   $("#demo").addEventListener("click", async () => {
@@ -204,7 +242,7 @@
       h("p", { class: "small", text: SCOPE_NOTE }));
   }
 
-  function render(rep, { demo = false, cached = false } = {}) {
+  function render(rep, { demo = false, cached = false, pending = false, keepPlace = false } = {}) {
     const s = rep.score;
     const cats = rep.categories.map((c) => {
       const items = rep.findings.filter((f) => f.category === c.id);
@@ -229,6 +267,7 @@
         h("div", {},
           heading,
           h("p", { class: "rmeta", text: `Checked ${fmtDate(rep.createdAt)}${cached ? " (saved result from the last few minutes)" : ""}${rep.meta?.finalUrl ? ` · ${rep.meta.finalUrl}` : ""}${rep.meta?.cms ? ` · ${rep.meta.cms}` : ""}` }),
+          pending ? h("p", { class: "aiwait", role: "status" }, h("span", { class: "spin", "aria-hidden": "true" }), "Writing plain-English explanations… The findings below are ready now; the wording will update in a few seconds.") : null,
           h("p", { class: "summary", text: rep.summary }),
           h("div", { class: "chips" }, chips))),
       ctaTopEl(rep),
@@ -240,6 +279,8 @@
       scoreTable(rep),
       h("p", { class: "scope", text: `${rep.scope} A passive check can't prove a site is secure; it shows common gaps that are visible from the outside.${rep.ai?.used ? " Explanations were written with help from Google Gemini, based only on the evidence shown." : ""}` })].flat().filter(Boolean));
     out.hidden = false;
+    out.setAttribute("aria-busy", pending ? "true" : "false");
+    if (keepPlace) return; // AI wording swapped in: don't move focus or scroll
     heading.focus({ preventScroll: true });
     out.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
   }
