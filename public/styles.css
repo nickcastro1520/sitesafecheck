@@ -53,6 +53,8 @@ form.scan .linkbtn:hover{color:var(--navy)}
 .hero .alt{margin:16px 0 0;font-size:15px;color:#d5e2f2}
 .err{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:var(--hibg);color:var(--hi);font-weight:600;font-size:15px}
 .err:empty{display:none}
+.err strong{display:block;font-size:16px;margin:0 0 2px}.err span{display:block;font-weight:500;color:#7a271a}.err .linkbtn{color:var(--hi);font-weight:700;margin-top:4px;min-height:32px}
+footer a{display:inline-block;padding:4px 0}
 #progress{max-width:720px;margin:18px 0 0;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:var(--r);padding:16px 18px}
 #progress ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 #progress li{display:flex;gap:10px;align-items:center;color:#c9d7e8}
@@ -148,6 +150,17 @@ details.passed .find{box-shadow:none}
 .cta .small{font-size:14px;color:#c4d3e6;margin:14px 0 0}
 .offer .card ul{margin:8px 0 0;padding-left:20px;color:var(--mut);font-size:15px}
 .page{padding:40px 0 60px;max-width:760px}
+.page .lede-dark{font-size:19px;color:var(--mut);margin:0 0 22px}
+.page ul.facts,.facts{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.facts li{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--sh);display:flex;flex-direction:column}
+.facts strong{font-size:30px;line-height:1.1;color:var(--brand2)}
+.facts span{font-size:14px;color:var(--mut)}
+.page ol.flow,.page ul{padding-left:22px}
+.page ol.flow li,.page ul li{margin:0 0 8px}
+.decisions dt{font-weight:700;margin:16px 0 4px;color:var(--ink)}
+.decisions dd{margin:0;color:#334155}
+.page code{background:#f1f5f9;border-radius:5px;padding:1px 5px;font-size:.92em}
+.page .ractions{display:flex;flex-wrap:wrap;gap:10px;margin:26px 0 0}
 .page h1{font-size:clamp(28px,4vw,38px);line-height:1.15;margin:0 0 14px}
 .page h2{font-size:22px;margin:30px 0 8px}
 .page p,.page li{color:#334155}

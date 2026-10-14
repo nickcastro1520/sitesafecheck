@@ -38,7 +38,7 @@
   }
   function stopProgress() { clearInterval(timer); timer = null; progress.hidden = true; plive.textContent = ""; }
 
-  // Desktop only: put the cursor in the box (on phones it would pop the keyboard over the page).
+  // Desktop only: focus the box (on phones it would pop the keyboard over the page).
   if (!location.search && matchMedia("(min-width: 900px) and (pointer: fine)").matches) { try { input.focus({ preventScroll: true }); } catch {} }
 
   const params = new URLSearchParams(location.search);
@@ -47,29 +47,57 @@
     try { history.replaceState(null, "", location.pathname + location.hash); } catch {} // keep the domain out of analytics page URLs
   }
 
+  // Friendly error states: what happened, plus a next step.
+  const ERR = {
+    empty: ["Enter your website address", "Type your domain, like yourbusiness.com. Any form works, including www or a full link."],
+    invalid: ["That address didn't work", null, "Try just the domain, like yourbusiness.com."],
+    notfound: ["We couldn't find that website", "No website answered at that address.", "Check the spelling, or try it with or without www."],
+    unreachable: ["The site didn't respond", "We found the domain but couldn't connect to the website.", "Make sure it opens in your browser, then try again in a few minutes."],
+    timeout: ["The site took too long to answer", "Slow or busy websites sometimes time out.", "Try again in a minute."],
+    limited: ["Scan limit reached", null, "In the meantime, you can look at a sample report."],
+    server: ["Something went wrong on our side", "It's not you: the scan didn't finish.", `Try again in a minute. If it keeps happening, email ${EMAIL}.`],
+    offline: ["Connection lost", "Your device couldn't reach SiteSafeCheck.", "Check your internet connection and try again."],
+  };
+  function showError(kind, serverMsg) {
+    const [title, msg, next] = ERR[kind];
+    err.replaceChildren(h("strong", { text: title }), h("span", { text: [serverMsg || msg, next].filter(Boolean).join(" ") }),
+      ...(kind === "limited" ? [h("button", { type: "button", class: "linkbtn", text: "See a sample report", onclick: () => $("#demo").click() })] : []));
+    err.dataset.kind = kind;
+  }
+  function errorKind(status, code) {
+    if (code === "invalid_url" || code === "blocked_target" || code === "bad_request") return "invalid";
+    if (code === "dns_not_found") return "notfound";
+    if (code === "unreachable" || code === "connect_failed") return "unreachable";
+    if (code === "timeout" || code === "dns_timeout" || status === 504) return "timeout";
+    if (status === 429 || code === "rate_limited" || code === "daily_cap") return "limited";
+    return "server";
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    err.textContent = "";
+    err.replaceChildren(); delete err.dataset.kind;
     // Accept any form people paste: bare domain, www, http(s), paths. The server normalizes it.
     const url = input.value.trim().replace(/^[<"'(\[]+|[>"')\],;.]+$/g, "");
-    if (!url) { err.textContent = "Enter your website address, like yourbusiness.com."; input.focus(); return; }
+    if (!url) { showError("empty"); input.focus(); return; }
     btn.disabled = true; btn.textContent = "Checking…";
     out.hidden = true; out.setAttribute("aria-busy", "true");
     startProgress();
     track("scan_started");
     try {
-      const r = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url, authorized: true, confirmation: "submit_notice_v1", company_website: $("#company_website").value }) });
+      const r = await fetch("/api/scan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url, authorized: true, confirmation: "submit_notice_v1", company_website: $("#company_website").value }), signal: AbortSignal.timeout(70000) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok || !j.report) {
-        err.textContent = j.message || (r.status === 429 ? "Too many checks right now. Please try again later." : "Something went wrong. Please try again.");
+        const kind = errorKind(r.status, j.error);
+        showError(kind, kind === "invalid" || kind === "limited" ? j.message : "");
         track("scan_failed", { reason: j.error || String(r.status) });
         input.focus();
         return;
       }
       render(j.report, { cached: j.cached });
       track("scan_completed", { grade: j.report.score.grade, score: j.report.score.score, cached: Boolean(j.cached) });
-    } catch {
-      err.textContent = "Connection lost. Check your internet and try again.";
+    } catch (ex) {
+      showError(ex && ex.name === "TimeoutError" ? "timeout" : "offline");
+      track("scan_failed", { reason: ex && ex.name === "TimeoutError" ? "client_timeout" : "network" });
     } finally {
       stopProgress();
       btn.disabled = false; btn.textContent = "Scan my site free";
@@ -78,12 +106,12 @@
   });
 
   $("#demo").addEventListener("click", async () => {
-    err.textContent = "";
+    err.replaceChildren();
     try {
       const r = await fetch("/demo.json");
       render(await r.json(), { demo: true });
       track("example_viewed");
-    } catch { err.textContent = "Couldn't load the example. Please try again."; }
+    } catch { showError("offline"); }
   });
 
   if (params.has("example")) $("#demo").click(); // /?example opens the sample report directly

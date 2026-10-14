@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How I Built SiteSafeCheck: an AI-Powered Security Checker | Nick Castro</title>
+<meta name="description" content="How Nick Castro built SiteSafeCheck with AI tools: one batched Gemini call per scan with honesty filters, passive checks, SSRF protection, rate limits, automated tests, and the tradeoffs behind it.">
+<link rel="canonical" href="https://sitesafecheck.com/how-i-built-this">
+<meta name="theme-color" content="#0b1f3a">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SiteSafeCheck">
+<meta property="og:url" content="https://sitesafecheck.com/how-i-built-this">
+<meta property="og:title" content="How I built SiteSafeCheck with AI tools">
+<meta property="og:description" content="How Nick Castro built SiteSafeCheck with AI tools: one batched Gemini call per scan with honesty filters, passive checks, SSRF protection, rate limits, automated tests, and the tradeoffs behind it.">
+<meta property="og:image" content="https://sitesafecheck.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SiteSafeCheck: free website security check for small businesses">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/styles.css">
+<!--GA-->
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+ <div class="wrap">
+  <a class="logo" href="/" aria-label="SiteSafeCheck home"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6 11 14v16c0 13.4 8.9 23.8 21 27.6C44.1 53.8 53 43.4 53 30V14L32 6Z" fill="#14907d"/><path d="m22 32 7 7 13-14" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>SiteSafeCheck</a>
+  <nav class="main" aria-label="Main"><a href="/#what">What we check</a><a href="/#fixes">Get it fixed</a><a href="/#faq">FAQ</a><a href="/about">About</a></nav>
+ </div>
+</header>
+<main id="main" class="wrap page build">
+<h1>How I built SiteSafeCheck</h1>
+<p class="lede-dark">I'm Nick Castro. I built SiteSafeCheck, a free website security check for small businesses, with AI tools, and AI also runs inside the product. This page covers the problem, how it works, and the tradeoffs I made.</p>
+
+<ul class="facts" aria-label="SiteSafeCheck at a glance">
+ <li><strong>25</strong><span>checks in 5 categories</span></li>
+ <li><strong>1</strong><span>Gemini call per fresh scan</span></li>
+ <li><strong>67</strong><span>automated tests</span></li>
+ <li><strong>100</strong><span>Lighthouse score in all 4 categories</span></li>
+</ul>
+
+<h2>The problem</h2>
+<p>Most security scanners talk in jargon: "Missing HSTS header", "DMARC p=none", "TLS 1.1 accepted". A bakery owner can't tell which of those matter or what to do about them, so the report gets ignored and the gaps stay open.</p>
+
+<h2>Who it's for</h2>
+<p>Small-business owners, and whoever manages their website. They get a grade, the evidence for each issue, what it means in plain English, the realistic worst case, and what kind of change fixes it. For me, it's also an honest way to find people who need the fixes I offer.</p>
+
+<h2>How it works</h2>
+<ol class="flow">
+ <li><strong>Passive checks in plain code.</strong> The scanner loads the public home page, reads headers and the certificate, looks up public DNS records (SPF, DMARC, 18 common DKIM selectors), and requests 10 well-known paths like <code>/.env</code>. No AI decides what's wrong.</li>
+ <li><strong>A transparent score.</strong> Fixed rules turn the findings into a 0–100 score and an A–F grade, and the report shows the math.</li>
+ <li><strong>One batched Gemini call.</strong> Every finding that needs attention goes to Gemini in a single JSON request, which writes a plain-English "what this means" and a one-sentence "worst case" for each.</li>
+ <li><strong>Honesty filters and fallbacks.</strong> Each AI line is checked before it's shown. Anything that calls a site "secure", cites statistics, uses certainty words, pitches a service, or leaks a copy-paste config snippet is dropped and replaced with copy I wrote by hand. Every check has a hand-written version, so the report works even with AI off.</li>
+</ol>
+
+<h2>How I used AI and other tools</h2>
+<ul>
+ <li><strong>AI inside the product:</strong> Google Gemini writes the explanations and worst-case lines, one request per fresh scan, under a daily cap. The AI can rewrite text for findings the code measured, but it can't add, remove, or upgrade them.</li>
+ <li><strong>AI while building:</strong> I used AI coding tools to write the checks, tests, and copy faster. I reviewed the changes, ran the test suite, and checked the live site after every deploy.</li>
+ <li><strong>Vercel:</strong> static pages plus one serverless function (<code>/api/scan</code>). Every push to <code>main</code> deploys automatically. Strict security headers are set in <code>vercel.json</code>, and the site scores an A (100/100) on its own check.</li>
+ <li><strong>GitHub:</strong> the code is <a href="https://github.com/nickcastro1520/sitesafecheck">public on GitHub</a>, and GitHub Actions runs the tests on every push.</li>
+ <li><strong>SSRF protection:</strong> a scanner that fetches any URL is a classic way to reach internal systems. Every domain is resolved and validated, the connection is pinned to the validated IP, every redirect is re-checked, only ports 80 and 443 are allowed, private and cloud-metadata addresses are blocked, and every request has a timeout and size cap.</li>
+ <li><strong>Rate limits and caching:</strong> 10 fresh scans per hour and 30 per day for each visitor (by hashed IP), daily caps on total scans and AI calls, and a 10-minute cache per domain so repeat checks are instant and free.</li>
+ <li><strong>Automated tests:</strong> 67 tests cover the checks, scoring, the SSRF guard, the API, and the AI filters, using a mocked Gemini so they run offline.</li>
+ <li><strong>Lighthouse:</strong> the home page scores 100 for Performance, Accessibility, Best Practices, and SEO on mobile and desktop. To keep it there, analytics loads after the first interaction instead of blocking the first paint.</li>
+</ul>
+
+<h2>Key decisions and tradeoffs</h2>
+<dl class="decisions">
+ <dt>Passive-only scanning</dt>
+ <dd>Sending attack traffic to someone's site can be illegal and can break things, so the scanner only does what a normal visitor or search engine does. The tradeoff: it can't find bugs inside code or plugins, and every report says so.</dd>
+ <dt>Holding the AI to hand-written baselines</dt>
+ <dd>In early live testing, the AI overstated a low-risk issue: it suggested a script could quietly use visitors' webcams, but browsers ask permission first. Now each AI worst case gets my hand-written version as a baseline, and the AI isn't allowed to go beyond it. I gave up some variety in exchange for accuracy.</dd>
+ <dt>Free diagnosis, paid fix</dt>
+ <dd>The free report explains each problem and names the kind of change that fixes it, but leaves out copy-paste configuration. The fix itself is my paid service. Work I don't do (penetration tests, code audits, malware or breach cleanup) is referred out, never sold.</dd>
+ <dt>A confirmation line instead of a checkbox</dt>
+ <dd>A required "I own this site" checkbox was stopping first-time visitors at the button. I replaced it with a line under the button ("By scanning, you confirm you own or manage this site"). The API still refuses requests without that confirmation, and it logs every one.</dd>
+</dl>
+
+<h2>Results so far</h2>
+<p>Only numbers I can verify:</p>
+<ul>
+ <li><strong>25 checks</strong> in 5 categories, counted from the check catalog in the code.</li>
+ <li><strong>67 automated tests</strong>, all passing, from the test run for this version.</li>
+ <li><strong>Lighthouse 100/100/100/100</strong> on the home page, mobile and desktop, measured October 14, 2026.</li>
+ <li><strong>Scan speed:</strong> in five fresh scans I timed on October 14, 2026, the checks themselves took 0.3–1.3 seconds, and the full report, including the AI write-up, took 5–28 seconds.</li>
+ <li><strong>Grade A (100/100)</strong> for sitesafecheck.com on its own check.</li>
+</ul>
+
+<p class="ractions"><a class="btn btn-go" href="/">Scan my site free</a><a class="btn btn-ghost" href="https://github.com/nickcastro1520/sitesafecheck">View the code on GitHub</a><a class="btn btn-ghost" href="https://nickcastrobuilds.com">More of my work</a></p>
+</main>
+<footer>
+ <div class="wrap">
+  <span>Built by <a href="https://nickcastrobuilds.com">Nick Castro</a> · <a href="tel:+17082501040">(708) 250-1040</a> · <a href="mailto:nickcastro1520@gmail.com">nickcastro1520@gmail.com</a></span>
+  <nav aria-label="Footer"><a href="/how-i-built-this">How I built this</a><a href="/about">About</a><a href="/privacy">Privacy</a><a href="/llms.txt">llms.txt</a></nav>
+ </div>
+</footer>
+</body>
+</html>

@@ -91,3 +91,40 @@ test("home page: keyword title, one H1, low-friction scan form, trust lines, sam
   assert.match(app, /authorized: true, confirmation: "submit_notice_v1"/);
   assert.match(app, /min-width: 900px\) and \(pointer: fine\)/, "autofocus on desktop only");
 });
+
+test("How I built this page: linked everywhere, real numbers only, no assistant names", async () => {
+  const { readdir } = await import("node:fs/promises");
+  const page = await readFile(new URL("../public/how-i-built-this.html", import.meta.url), "utf8");
+  assert.equal((page.match(/<h1[\s>]/g) || []).length, 1);
+  assert.match(page, /<link rel="canonical" href="https:\/\/sitesafecheck\.com\/how-i-built-this">/);
+  assert.match(page, /href="https:\/\/github\.com\/nickcastro1520\/sitesafecheck"/);
+  assert.doesNotMatch(page, /\{TESTS\}|lorem|TODO/i);
+  // The stated test count must match the real number of tests.
+  let tests = 0;
+  for (const f of await readdir(new URL("./", import.meta.url))) if (f.endsWith(".test.js")) tests += ((await readFile(new URL(`./${f}`, import.meta.url), "utf8")).match(/^test\(/gm) || []).length;
+  const stated = [...page.matchAll(/(\d+)(?:<\/strong><span>automated tests| automated tests| tests cover)/g)].map((m) => Number(m[1]));
+  assert.ok(stated.length >= 3 && stated.every((n) => n === tests), `page says ${stated}, actual ${tests}`);
+  // The stated check count must match the catalog.
+  const { CATALOG, CATEGORIES } = await import("../api/_lib/catalog.js");
+  assert.match(page, new RegExp(`<strong>${Object.keys(CATALOG).length}</strong><span>checks in ${CATEGORIES.length} categories`));
+  for (const f of ["sitemap.xml", "llms.txt"]) assert.match(await readFile(new URL(`../public/${f}`, import.meta.url), "utf8"), /sitesafecheck\.com\/how-i-built-this/, f);
+  assert.match(await readFile(new URL("../public/about.html", import.meta.url), "utf8"), /href="\/how-i-built-this"/);
+  for (const f of (await readdir(new URL("../public/", import.meta.url))).filter((x) => x.endsWith(".html"))) {
+    const t = await readFile(new URL(`../public/${f}`, import.meta.url), "utf8");
+    const foot = t.slice(t.indexOf("<footer>"), t.indexOf("</footer>"));
+    assert.match(foot, /Built by <a href="https:\/\/nickcastrobuilds\.com">Nick Castro<\/a>/, f);
+    for (const l of ["/how-i-built-this", "/about", "/privacy"]) assert.ok(foot.includes(`href="${l}"`), `${f} footer ${l}`);
+    assert.match(t, /<a class="skip" href="#main">/, f); assert.match(t, /<main id="main"/, f);
+  }
+  for (const f of ["README.md", "public/how-i-built-this.html", "public/about.html", "public/index.html", "public/llms.txt", "public/app.js"]) {
+    assert.doesNotMatch(await readFile(new URL(`../${f}`, import.meta.url), "utf8"), /grok|cursor\b/i, f);
+  }
+});
+
+test("scan form has a friendly message and next step for every error state", async () => {
+  const app = await readFile(new URL("../public/app.js", import.meta.url), "utf8");
+  for (const k of ["empty", "invalid", "notfound", "unreachable", "timeout", "limited", "server", "offline"]) assert.match(app, new RegExp(`\\n    ${k}: \\["[^"]+", `), k);
+  for (const code of ["dns_not_found", "unreachable", "timeout", "rate_limited", "invalid_url"]) assert.ok(app.includes(`"${code}"`), code);
+  assert.match(app, /AbortSignal\.timeout\(70000\)/);
+  assert.doesNotMatch(app, /err\.textContent = /);
+});

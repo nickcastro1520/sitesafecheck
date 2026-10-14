@@ -24,5 +24,6 @@
 ## Links
 - [Run a free check](https://sitesafecheck.com/)
 - [About and methodology](https://sitesafecheck.com/about)
+- [How I built this](https://sitesafecheck.com/how-i-built-this): how Nick Castro built SiteSafeCheck with AI tools (one batched Gemini call per scan with hand-written fallbacks and honesty filters, Vercel, GitHub, passive checks, SSRF protection, rate limits, caching, automated tests) and the tradeoffs behind it
 - [Privacy](https://sitesafecheck.com/privacy)
 - [Built by Nick Castro](https://nickcastrobuilds.com/)
