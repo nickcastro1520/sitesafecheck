@@ -39,7 +39,7 @@
 <ul class="facts" aria-label="SiteSafeCheck at a glance">
  <li><strong>25</strong><span>checks in 5 categories</span></li>
  <li><strong>1</strong><span>Gemini call per fresh scan</span></li>
- <li><strong>67</strong><span>automated tests</span></li>
+ <li><strong>69</strong><span>automated tests</span></li>
  <li><strong>100</strong><span>Lighthouse score in all 4 categories</span></li>
 </ul>
 
@@ -65,7 +65,7 @@
  <li><strong>GitHub:</strong> the code is <a href="https://github.com/nickcastro1520/sitesafecheck">public on GitHub</a>, and GitHub Actions runs the tests on every push.</li>
  <li><strong>SSRF protection:</strong> a scanner that fetches any URL is a classic way to reach internal systems. Every domain is resolved and validated, the connection is pinned to the validated IP, every redirect is re-checked, only ports 80 and 443 are allowed, private and cloud-metadata addresses are blocked, and every request has a timeout and size cap.</li>
  <li><strong>Rate limits and caching:</strong> 10 fresh scans per hour and 30 per day for each visitor (by hashed IP), daily caps on total scans and AI calls, and a 10-minute cache per domain so repeat checks are instant and free.</li>
- <li><strong>Automated tests:</strong> 67 tests cover the checks, scoring, the SSRF guard, the API, and the AI filters, using a mocked Gemini so they run offline.</li>
+ <li><strong>Automated tests:</strong> 69 tests cover the checks, scoring, the SSRF guard, the API, and the AI filters, using a mocked Gemini so they run offline.</li>
  <li><strong>Lighthouse:</strong> the home page scores 100 for Performance, Accessibility, Best Practices, and SEO on mobile and desktop. To keep it there, analytics loads after the first interaction instead of blocking the first paint.</li>
 </ul>
 
@@ -75,6 +75,8 @@
  <dd>Sending attack traffic to someone's site can be illegal and can break things, so the scanner only does what a normal visitor or search engine does. The tradeoff: it can't find bugs inside code or plugins, and every report says so.</dd>
  <dt>Holding the AI to hand-written baselines</dt>
  <dd>In early live testing, the AI overstated a low-risk issue: it suggested a script could quietly use visitors' webcams, but browsers ask permission first. Now each AI worst case gets my hand-written version as a baseline, and the AI isn't allowed to go beyond it. I gave up some variety in exchange for accuracy.</dd>
+ <dt>Show the facts first, the AI wording second</dt>
+ <dd>The checks finish in about a second, but the AI write-up takes a few more. Instead of making people wait for it, the server streams the report in two parts: the findings with my hand-written explanations appear right away, then Gemini's plain-English wording replaces them a couple of seconds later. I also tested which Gemini models actually answer with the live key, put the working one first, remember it on each warm server, and give each model a short timeout so one slow or unavailable model can't stall a scan. The tradeoff: the text on the page changes once while you're reading, so a "Writing plain-English explanations…" note shows until it does.</dd>
  <dt>Free diagnosis, paid fix</dt>
  <dd>The free report explains each problem and names the kind of change that fixes it, but leaves out copy-paste configuration. The fix itself is my paid service. Work I don't do (penetration tests, code audits, malware or breach cleanup) is referred out, never sold.</dd>
  <dt>A confirmation line instead of a checkbox</dt>
@@ -85,9 +87,9 @@
 <p>Only numbers I can verify:</p>
 <ul>
  <li><strong>25 checks</strong> in 5 categories, counted from the check catalog in the code.</li>
- <li><strong>67 automated tests</strong>, all passing, from the test run for this version.</li>
+ <li><strong>69 automated tests</strong>, all passing, from the test run for this version.</li>
  <li><strong>Lighthouse 100/100/100/100</strong> on the home page, mobile and desktop, measured October 14, 2026.</li>
- <li><strong>Scan speed:</strong> in five fresh scans I timed on October 14, 2026, the checks themselves took 0.3–1.3 seconds, and the full report, including the AI write-up, took 5–28 seconds.</li>
+ <li><strong>Scan speed:</strong> before the speed work, five fresh scans I timed on October 14, 2026 took 5–28 seconds to show anything, because the page waited for the AI write-up and the server sometimes tried unavailable models first. After it, five fresh scans of different sites showed the first findings in 1.0–3.8 seconds and the finished report in 2.3–6.1 seconds.</li>
  <li><strong>Grade A (100/100)</strong> for sitesafecheck.com on its own check.</li>
 </ul>
 

@@ -76,7 +76,7 @@ test("home page: keyword title, one H1, low-friction scan form, trust lines, sam
   assert.match(html, /id="go">Scan my site free</);
   for (const t of ["Free", "No signup", "Takes about 30 seconds", "Passive checks only (we never attack your site)"]) assert.ok(html.includes(`<li>${t}</li>`), t);
   const form = html.slice(html.indexOf('<form class="scan"'), html.indexOf("</form>"));
-  assert.match(form, /id="demo">See a sample report</, "sample report link sits by the button");
+  assert.match(form, /id="demo">see a sample report</i, "sample report link sits by the button");
   const demo = JSON.parse(await readFile(new URL("../public/demo.json", import.meta.url), "utf8"));
   const sample = html.slice(html.indexOf('id="sample"'), html.indexOf('id="what"'));
   assert.match(sample, new RegExp(`gradebox g${demo.score.grade}`));
@@ -88,7 +88,7 @@ test("home page: keyword title, one H1, low-friction scan form, trust lines, sam
     assert.ok(sample.includes(f.title) && sample.includes(f.worst.replace(/'/g, "&#39;")), `preview for ${id} matches the example report`);
   }
   const app = await readFile(new URL("../public/app.js", import.meta.url), "utf8");
-  assert.match(app, /authorized: true, confirmation: "submit_notice_v1"/);
+  assert.match(app, /authorized: true, confirmation: source === "demo" \? "demo_sample_site" : "submit_notice_v1"/);
   assert.match(app, /min-width: 900px\) and \(pointer: fine\)/, "autofocus on desktop only");
 });
 
@@ -127,4 +127,12 @@ test("scan form has a friendly message and next step for every error state", asy
   for (const code of ["dns_not_found", "unreachable", "timeout", "rate_limited", "invalid_url"]) assert.ok(app.includes(`"${code}"`), code);
   assert.match(app, /AbortSignal\.timeout\(70000\)/);
   assert.doesNotMatch(app, /err\.textContent = /);
+});
+
+test("one-tap live demo button and progressive AI indicator", async () => {
+  const app = await readFile(new URL("../public/app.js", import.meta.url), "utf8");
+  assert.match(html, /id="try-demo">Try it on a sample site</);
+  assert.match(app, /track\("demo_scan_clicked"/);
+  assert.match(app, /Writing plain-English explanations/);
+  assert.match(app, /stream: true/);
 });
