@@ -8,3 +8,4 @@ export async function GET(request) {
   const ga = String(process.env.GA_MEASUREMENT_ID || "").trim();
   return new Response(sharePage(sh, { ga: /^G-[A-Z0-9]{4,15}$/.test(ga) ? ga : "" }), { status: 200, headers });
 }
+export const HEAD = GET;
