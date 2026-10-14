@@ -12,11 +12,11 @@ test("JSON-LD parses and has the required types", () => {
   const m = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
   const data = JSON.parse(m[1]);
   const types = data["@graph"].map((n) => n["@type"]);
-  for (const t of ["WebSite", "Person", "ProfessionalService", "SoftwareApplication", "FAQPage"]) assert.ok(types.includes(t), t);
+  for (const t of ["WebSite", "Person", "ProfessionalService", "WebApplication", "FAQPage"]) assert.ok(types.includes(t), t);
   const person = data["@graph"].find((n) => n["@type"] === "Person");
   assert.equal(person.url, "https://nickcastrobuilds.com");
   assert.deepEqual(person.sameAs, ["https://www.linkedin.com/in/nicolas-castro-4081545b"]);
-  assert.equal(data["@graph"].find((n) => n["@type"] === "SoftwareApplication").offers.price, "0");
+  assert.equal(data["@graph"].find((n) => n["@type"] === "WebApplication").offers.price, "0");
   // FAQ answers in JSON-LD match visible FAQ questions
   for (const q of data["@graph"].find((n) => n["@type"] === "FAQPage").mainEntity) assert.ok(html.includes(`<summary>${q.name}</summary>`), q.name);
 });
