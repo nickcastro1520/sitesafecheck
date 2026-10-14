@@ -204,3 +204,4 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
 .shared .kicker{margin:0 0 10px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.06em;font-size:13px}
 .shared .rhead{margin:0 0 18px}
 .shared h1{margin:0 0 6px}
+.shared .cta p{color:#d5e2f2}.shared .cta h2{margin-top:0;color:#fff}
