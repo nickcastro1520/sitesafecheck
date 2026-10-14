@@ -78,6 +78,10 @@
   ],
   "rewrites": [
     {
+      "source": "/r/:id",
+      "destination": "/api/share?id=:id"
+    },
+    {
       "source": "/r",
       "destination": "/api/share"
     }

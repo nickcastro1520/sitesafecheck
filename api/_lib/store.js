@@ -24,7 +24,11 @@ function memGet(key) {
   return hit.value;
 }
 
-async function redis(cmd) {
+// Every key this site writes lives under "ssc:" (the store is shared with another site).
+export const PREFIX = "ssc:";
+export const prefixed = (cmd) => [cmd[0], PREFIX + cmd[1], ...cmd.slice(2)];
+async function redis(rawCmd) {
+  const cmd = prefixed(rawCmd);
   const { url, token } = redisEnv();
   const r = await fetch(url, {
     method: "POST",

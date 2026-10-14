@@ -255,26 +255,37 @@
       h("p", { class: "small", text: SCOPE_NOTE }));
   }
 
-  // No report storage is configured, so a share link carries the domain and grade and offers to re-run the check.
-  function shareUrl(rep) {
-    const d = (rep.createdAt || "").slice(0, 10);
-    return `${location.origin}/r?url=${encodeURIComponent(rep.host)}&g=${rep.score.grade}&s=${rep.score.score}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ""}`;
+  // Share: the server saves the report for 30 days and returns /r/<id>; if it can't, it returns
+  // the no-grade /r?url= link that offers to run the check.
+  async function shareLink(rep) {
+    try {
+      const r = await fetch("/api/share", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: rep.host }), signal: AbortSignal.timeout(8000) });
+      const j = await r.json();
+      if (j && typeof j.url === "string" && j.url.startsWith("/r")) return { url: location.origin + j.url, saved: Boolean(j.saved) };
+    } catch {}
+    return { url: `${location.origin}/r?url=${encodeURIComponent(rep.host)}`, saved: false };
   }
   function shareButtons(rep) {
-    const url = shareUrl(rep);
     const status = h("span", { class: "share-status", role: "status", "aria-live": "polite" });
-    const copy = async (method) => {
-      let ok = false;
-      try { await navigator.clipboard.writeText(url); ok = true; } catch {
-        try { const t = h("textarea", { class: "sr-copy", "aria-hidden": "true" }); t.value = url; document.body.append(t); t.select(); ok = document.execCommand("copy"); t.remove(); } catch {}
+    let link = null;
+    const get = async () => (link = link || await shareLink(rep));
+    const copyText = async (url) => {
+      try { await navigator.clipboard.writeText(url); return true; } catch {
+        try { const t = h("textarea", { class: "sr-copy", "aria-hidden": "true" }); t.value = url; document.body.append(t); t.select(); const ok = document.execCommand("copy"); t.remove(); return ok; } catch { return false; }
       }
-      status.textContent = ok ? "Link copied." : `Copy this link: ${url}`;
-      track("share_click", { method, ok });
+    };
+    const copy = async (method) => {
+      status.textContent = "Creating link…";
+      const l = await get();
+      const ok = await copyText(l.url);
+      status.textContent = ok ? (l.saved ? "Link copied. It opens this saved report for 30 days." : "Link copied.") : `Copy this link: ${l.url}`;
+      track("share_click", { method, ok, saved: l.saved });
     };
     const kids = [h("button", { type: "button", class: "btn btn-ghost", onclick: () => copy("copy"), text: "Copy link to this report" })];
     kids.push(h("button", { type: "button", class: "btn btn-ghost", onclick: async () => {
       if (navigator.share) {
-        try { await navigator.share({ title: `Security report for ${rep.host}: ${rep.score.grade}`, text: `${rep.host} got a ${rep.score.grade} (${rep.score.score}/100) on SiteSafeCheck.`, url }); track("share_click", { method: "web_share", ok: true }); }
+        const l = await get();
+        try { await navigator.share({ title: `Security report for ${rep.host}${l.saved ? `: ${rep.score.grade}` : ""}`, url: l.url }); track("share_click", { method: "web_share", ok: true, saved: l.saved }); }
         catch (e) { if (!e || e.name !== "AbortError") copy("share_fallback"); }
       } else copy("share_fallback");
     }, text: "Share" }));
@@ -314,7 +325,7 @@
           h("div", { class: "chips" }, chips))),
       ctaTopEl(rep),
       h("div", { class: "ractions noprint" },
-        demo ? null : shareButtons(rep),
+        demo || pending ? null : shareButtons(rep),
         h("button", { type: "button", class: "btn btn-dark", onclick: () => window.print(), text: "Print / save as PDF" }),
         h("button", { type: "button", class: "btn btn-ghost", onclick: () => { out.hidden = true; input.value = ""; window.scrollTo({ top: 0 }); input.focus(); }, text: "Check another site" })),
       cats,
