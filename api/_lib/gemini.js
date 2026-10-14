@@ -5,8 +5,16 @@
 const API = "https://generativelanguage.googleapis.com/v1beta/models";
 
 export const isConfigured = () => Boolean(process.env.GEMINI_API_KEY);
-const models = () => (process.env.GEMINI_MODEL || "gemini-3.8-flash,gemini-3.5-flash,gemini-3.5-flash-lite,gemini-3.1-flash-lite")
-  .split(",").map((s) => s.trim()).filter(Boolean);
+// Order = what answered fastest with the live key (measured Oct 14, 2026). The model that last
+// worked on this warm instance is always tried first; 404/403 models are skipped for 6 hours.
+export const DEFAULT_MODELS = "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.5-flash,gemini-3.8-flash";
+const good = globalThis.__ssc_gm || (globalThis.__ssc_gm = { model: "" });
+export const models = () => {
+  const list = (process.env.GEMINI_MODEL || DEFAULT_MODELS).split(",").map((s) => s.trim()).filter(Boolean);
+  return good.model && list.includes(good.model) ? [good.model, ...list.filter((m) => m !== good.model)] : list;
+};
+const ATTEMPT_MS = 9000;   // per model
+const TOTAL_MS = 20000;    // all attempts together
 
 const caps = globalThis.__ssc_caps || (globalThis.__ssc_caps = new Map());
 const blocked = (k) => { const e = caps.get(k); if (!e) return false; if (e < Date.now()) { caps.delete(k); return false; } return true; };
@@ -56,15 +64,20 @@ export async function ask(opts) {
   if (!isConfigured()) throw new GeminiError("not_configured", "GEMINI_API_KEY is not set");
   const trail = [];
   let sawBusy = false;
+  const end = Date.now() + (opts.totalMs || TOTAL_MS);
   for (const model of models()) {
     if (blocked("m:" + model)) continue;
+    const left = end - Date.now();
+    if (left < 1500) break;
     try {
-      const res = await callOnce(model, opts);
+      const res = await callOnce(model, { ...opts, timeout: Math.min(opts.timeout || ATTEMPT_MS, left) });
+      good.model = model;
       res.trail = trail;
       return res;
     } catch (e) {
       const msg = e.message || "";
       trail.push({ model, status: e.status || 0, msg: msg.slice(0, 200) });
+      if (good.model === model) good.model = "";
       if (e.name === "TimeoutError" || e.name === "AbortError") continue;
       if (e.status === 404 || e.status === 403 || (e.status === 400 && /model|not found|not supported|no longer available|unavailable/i.test(msg))) { block("m:" + model, 6 * HOUR); continue; }
       if (e.status === 429) {

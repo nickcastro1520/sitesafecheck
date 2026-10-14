@@ -3,7 +3,7 @@
 import { createHash } from "node:crypto";
 import { normalizeTarget, ScanError } from "./_lib/net.js";
 import { collect, buildReport } from "./_lib/scan.js";
-import { isConfigured } from "./_lib/gemini.js";
+import { isConfigured, ask, DEFAULT_MODELS } from "./_lib/gemini.js";
 import { getJSON, setJSON, incr, decr, isPersistent } from "./_lib/store.js";
 
 const num = (v, d) => (Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v) : d);
@@ -20,7 +20,19 @@ const json = (obj, status = 200, extra = {}) => new Response(JSON.stringify(obj)
 const sha = (s) => createHash("sha256").update(s).digest("hex");
 const inflight = globalThis.__ssc_inflight || (globalThis.__ssc_inflight = new Map());
 
-export async function GET() {
+let lastProbe = 0;
+export async function GET(request) {
+  // TEMPORARY model probe (removed after measuring): one tiny call per model, max once per 10 min per instance.
+  if (request && new URL(request.url).searchParams.get("probe") === "models" && isConfigured() && Date.now() - lastProbe > 600000) {
+    lastProbe = Date.now();
+    const out = [];
+    for (const m of (process.env.GEMINI_MODEL || DEFAULT_MODELS).split(",").map((x) => x.trim()).concat(["gemini-3.1-flash", "gemini-3-flash"])) {
+      const t = Date.now();
+      try { const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`, { method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY }, body: JSON.stringify({ contents: [{ parts: [{ text: "Say OK" }] }], generationConfig: { maxOutputTokens: 400 } }), signal: AbortSignal.timeout(15000) }); out.push({ m, status: r.status, ms: Date.now() - t }); }
+      catch (e) { out.push({ m, status: e.name, ms: Date.now() - t }); }
+    }
+    return json({ envOverride: Boolean(process.env.GEMINI_MODEL), out });
+  }
   const c = cfg();
   return json({ ok: true, ai: isConfigured(), persistent: isPersistent(), limits: { perHour: c.perHour, perDay: c.perDay }, cacheSeconds: c.cacheSec });
 }
@@ -78,6 +90,7 @@ export async function POST(request) {
   const cacheKey = `scan:v2:${target.host}`;
   const cached = await getJSON(cacheKey);
   if (cached) return json({ report: cached, cached: true });
+  const stream = body.stream === true;
 
   const hourKey = `rlh:${hour}:${ipH}`; const dayKey = `rld:${day}:${ipH}`; const capKey = `cap:${day}`;
   const nh = await incr(hourKey, 3700);
@@ -92,21 +105,37 @@ export async function POST(request) {
   }
 
   // One scan per domain at a time on this instance; concurrent requests share it.
-  let p = inflight.get(target.host);
-  if (!p) {
-    p = (async () => {
-      const raw = await collect(target.host);
+  // With stream:true the response is NDJSON: first the checks with hand-written copy
+  // ({ phase: "checks" }) as soon as they finish, then the AI-worded report ({ phase: "final" }).
+  let job = inflight.get(target.host);
+  if (!job) {
+    const raw = collect(target.host);
+    const quick = raw.then((r) => buildReport(r, { useAi: false }));
+    const full = raw.then(async (r) => {
       let useAi = false;
       if (isConfigured()) useAi = (await incr(`ai:${day}`, 26 * 3600)) <= c.aiDailyCap;
-      const report = await buildReport(raw, { useAi });
+      const report = await buildReport(r, { useAi });
       await setJSON(cacheKey, report, c.cacheSec);
       return report;
-    })().finally(() => inflight.delete(target.host));
-    inflight.set(target.host, p);
+    });
+    job = { quick, full, aiPending: isConfigured() };
+    quick.catch(() => {});
+    full.catch(() => {}).finally(() => inflight.delete(target.host));
+    inflight.set(target.host, job);
   }
   try {
-    const report = await p;
-    return json({ report, cached: false });
+    if (!stream) return json({ report: await job.full, cached: false });
+    const first = await job.quick; // throws scan errors before any bytes are sent
+    const enc = new TextEncoder();
+    const body2 = new ReadableStream({
+      async start(ctrl) {
+        ctrl.enqueue(enc.encode(JSON.stringify({ phase: "checks", report: { ...first, ai: { pending: job.aiPending } }, cached: false }) + "\n"));
+        try { ctrl.enqueue(enc.encode(JSON.stringify({ phase: "final", report: await job.full, cached: false }) + "\n")); }
+        catch { ctrl.enqueue(enc.encode(JSON.stringify({ phase: "final", report: first, cached: false }) + "\n")); }
+        ctrl.close();
+      },
+    });
+    return new Response(body2, { status: 200, headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff", "X-Accel-Buffering": "no" } });
   } catch (e) {
     const code = e instanceof ScanError ? e.code : "scan_failed";
     const status = ERRORS[code] || 500;

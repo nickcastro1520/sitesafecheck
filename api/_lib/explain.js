@@ -108,8 +108,8 @@ export async function explain(findings, ctx, { useAi = true, scoreInfo } = {}) {
     });
     const s = clean(j.summary, 700);
     const aiSummary = s.length >= 30 && !BANNED.test(s) && !SNIPPET.test(s) ? s : "";
-    return { findings: merged, summary: aiSummary || summary, ai: { used: used > 0, model: r.model, explained: used, of: need.length, worst: merged.filter((f) => f.worstSource === "ai").length, summary: Boolean(aiSummary) } };
+    return { findings: merged, summary: aiSummary || summary, ai: { used: used > 0, model: r.model, tried: (r.trail || []).map((t) => `${t.model}:${t.status || "timeout"}`), explained: used, of: need.length, worst: merged.filter((f) => f.worstSource === "ai").length, summary: Boolean(aiSummary) } };
   } catch (e) {
-    return { findings: out, summary, ai: { used: false, reason: e.code || "error" } };
+    return { findings: out, summary, ai: { used: false, reason: e.code || "error", tried: (e.trail || []).map((t) => `${t.model}:${t.status || "timeout"}`) } };
   }
 }

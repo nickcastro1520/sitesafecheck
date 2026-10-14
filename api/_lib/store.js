@@ -15,7 +15,7 @@ export function isPersistent() {
   return Boolean(url && token);
 }
 
-const mem = globalThis.__ssc_mem || (globalThis.__daikmb_mem = new Map());
+const mem = globalThis.__ssc_mem || (globalThis.__ssc_mem = new Map());
 
 function memGet(key) {
   const hit = mem.get(key);
