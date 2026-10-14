@@ -74,7 +74,8 @@ test("home page: keyword title, one H1, low-friction scan form, trust lines, sam
   assert.doesNotMatch(html, /type="checkbox"/, "no required checkbox before scanning");
   assert.match(html, /By scanning, you confirm you own or manage this site/);
   assert.match(html, /id="go">Scan my site free</);
-  for (const t of ["Free", "No signup", "Takes about 30 seconds", "Passive checks only (we never attack your site)"]) assert.ok(html.includes(`<li>${t}</li>`), t);
+  for (const t of ["Free", "No signup", "Results in under 10 seconds", "Passive checks only (we never attack your site)"]) assert.ok(html.includes(`<li>${t}</li>`), t);
+  assert.doesNotMatch(html, /30 seconds/, "old speed claim is gone");
   const form = html.slice(html.indexOf('<form class="scan"'), html.indexOf("</form>"));
   assert.match(form, /id="demo">see a sample report</i, "sample report link sits by the button");
   const demo = JSON.parse(await readFile(new URL("../public/demo.json", import.meta.url), "utf8"));
