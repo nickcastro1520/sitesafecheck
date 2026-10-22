@@ -5,10 +5,11 @@
 const API = "https://generativelanguage.googleapis.com/v1beta/models";
 
 export const isConfigured = () => Boolean(process.env.GEMINI_API_KEY);
-// Order = what answered with the live key (probed Oct 14, 2026: 3.5-flash-lite 200 in 0.8s;
-// 3.1-flash-lite, 3.5-flash and 3.8-flash 503; 3.1-flash and 3-flash 404). The model that last
+// Order = what answered with the key (probed Oct 22, 2026, 3 rounds each: 3.1-flash-lite 200 x2 / 503 x1
+// in about 1s; 3.5-flash 200 x3 in about 1s; 3.5-flash-lite timed out at 9s x3; 3.8-flash 503 x3).
+// Live scans that day also showed 3.5-flash-lite timing out before 3.1-flash-lite answered. The model that last
 // worked on this warm instance is always tried first; 404/403 models are skipped for 6 hours.
-export const DEFAULT_MODELS = "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-3.5-flash,gemini-3.8-flash";
+export const DEFAULT_MODELS = "gemini-3.1-flash-lite,gemini-3.5-flash,gemini-3.5-flash-lite,gemini-3.8-flash";
 const good = globalThis.__ssc_gm || (globalThis.__ssc_gm = { model: "" });
 export const models = () => {
   const list = (process.env.GEMINI_MODEL || DEFAULT_MODELS).split(",").map((s) => s.trim()).filter(Boolean);
