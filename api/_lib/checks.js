@@ -197,7 +197,7 @@ export const certErrorText = (code) => (CERT_ERRORS.find(([re]) => re.test(code 
 
 const fmtDate = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
-export function analyzeHttps({ host, httpsError, tls, legacy, httpChain, httpError, now = Date.now() }) {
+export function analyzeHttps({ host, httpsError, tls, legacy, httpChain, httpError, altHost = "", altChain = null, altError = "", now = Date.now() }) {
   const out = [];
   if (httpsError || !tls) {
     out.push(F("https_available", "fail", "high", `Couldn't open https://${host}/ (${clip(httpsError || "no secure connection", 80)}).`));
@@ -232,17 +232,40 @@ export function analyzeHttps({ host, httpsError, tls, legacy, httpChain, httpErr
     else if (legacy.accepted) out.push(F("tls_legacy", "warn", "medium", `The server still accepts ${legacy.protocol || "TLS 1.0/1.1"}, which browsers retired in 2020.`));
     else out.push(F("tls_legacy", "pass", "medium", "Outdated TLS 1.0 and 1.1 connections are refused."));
   }
-  // HTTP -> HTTPS
-  if (httpError && !httpChain) out.push(F("http_redirect", "pass", "medium", `Plain http://${host}/ isn't served at all (${clip(httpError, 50)}), so nobody lands on an unencrypted page.`));
-  else if (httpChain && httpChain.length) {
-    const path = httpChain.map((x) => `${x.url.replace(/\/$/, "")} (${x.status})`).join(" → ");
-    const last = httpChain.at(-1);
-    const endsHttps = last.url.startsWith("https://");
-    if (endsHttps) out.push(F("http_redirect", "pass", "medium", `http:// redirects to HTTPS: ${clip(path, 300)}`));
-    else if (last.status >= 200 && last.status < 400) out.push(F("http_redirect", "fail", "medium", `http://${host}/ loads without switching to HTTPS: ${clip(path, 300)}`));
-    else out.push(F("http_redirect", "warn", "medium", `http://${host}/ returned ${last.status} instead of redirecting to HTTPS: ${clip(path, 300)}`));
+  // HTTP -> HTTPS, for the address typed and (passively) its www / non-www twin.
+  const rd = judgeRedirect(host, httpChain, httpError);
+  if (rd) {
+    const parts = [rd];
+    const alt = altHost ? judgeRedirect(altHost, altChain, altError, true) : null;
+    if (alt) parts.push(alt);
+    const rank = { pass: 0, warn: 1, fail: 2 };
+    const worst = parts.reduce((a, b) => (rank[b.status] > rank[a.status] ? b : a));
+    const evidence = parts.map((p) => p.text).join(" Also: ").replace(/ Also: (.)/, (m, c) => ` Also: ${c.toLowerCase()}`);
+    const causes = parts.filter((p) => p.status !== "pass").map((p) => p.cause);
+    out.push(F("http_redirect", worst.status, "medium", evidence, causes.length ? { causes } : undefined));
+  } else if (altHost && altChain) {
+    const alt = judgeRedirect(altHost, altChain, altError, true);
+    if (alt) out.push(F("http_redirect", alt.status, "medium", alt.text, alt.status === "pass" ? undefined : { causes: [alt.cause] }));
   }
   return out;
+}
+
+// One http:// chain -> { status, text, cause }. Any plain-HTTP hop after the first (http://a → http://www.a →
+// https://www.a) is a warning: that extra unencrypted step can be read or changed, and newer Chrome asks
+// before loading it. A twin host that doesn't resolve or answer is never judged (null).
+export function judgeRedirect(h, chain, err, isAlt = false) {
+  const who = isAlt ? `The ${/^www\./.test(h) ? "www" : "non-www"} address http://${h}/` : `http://${h}/`;
+  if (!chain || !chain.length) return isAlt ? null : (err ? { status: "pass", text: `Plain http://${h}/ isn't served at all (${clip(err, 50)}), so nobody lands on an unencrypted page.` } : null);
+  const path = clip(chain.map((x) => `${x.url.replace(/\/$/, "")} (${x.status})`).join(" → "), 300);
+  const last = chain.at(-1);
+  if (last.url.startsWith("https://")) {
+    const plainSteps = chain.slice(1).filter((x) => x.url.startsWith("http://"));
+    if (plainSteps.length) return { status: "warn", cause: isAlt ? "alt-intermediate" : "intermediate", text: `${who} reaches HTTPS only after an extra unencrypted step: ${path}` };
+    return { status: "pass", text: isAlt ? `${who} also redirects to HTTPS: ${path}` : `http:// redirects to HTTPS: ${path}` };
+  }
+  if (isAlt && (err || last.status >= 400)) return null; // twin not really served: no deduction
+  if (last.status >= 200 && last.status < 400) return { status: isAlt ? "warn" : "fail", cause: isAlt ? "alt-insecure" : "insecure", text: `${who} loads without switching to HTTPS: ${path}` };
+  return { status: "warn", cause: "error", text: `${who} returned ${last.status} instead of redirecting to HTTPS: ${path}` };
 }
 
 // ---------------- mixed content ----------------

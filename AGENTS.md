@@ -12,6 +12,7 @@ A free, passive website security checker for small business owners. Enter a URL 
 - Open pull requests: none.
 
 ## Decisions (newest first)
+- 2026-10-22: http_redirect now warns (medium) on any plain-HTTP hop after the first (http://a → http://www.a → https) and passively checks the www/non-www twin over http:// (one GET; skipped with no deduction if it doesn't resolve or isn't served). Copy cites Chrome asking before insecure HTTP for all users (Google blog, Oct 21, 2026). On hosted platforms these warnings show as "Controlled by"; a typed address that loads without HTTPS still fails.
 - 2026-10-22: Published the email spoofing guide after Nick's OK.
 - 2026-10-22: Gemini order is now 3.1-flash-lite, 3.5-flash, 3.5-flash-lite, 3.8-flash. Probes that day: 3.5-flash-lite timed out at 9s three times (it was costing cold starts 9s), 3.8-flash returned 503 three times so it was NOT moved up, and 3.1-flash-lite and 3.5-flash answered in about 1s.
 - 2026-10-22: PHP failures always use the hand-written "What this means" (catalog `lockWhat`), because the AI softened it to "stability and reliability". The PHP fail CTA reads "Nick can hide the version and coordinate the update with your host." (catalog `who`) instead of "Nick can fix this.", since PHP upgrades are host work.

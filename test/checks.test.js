@@ -232,3 +232,29 @@ test("PHP version check: patched thresholds, EOL, skip when hidden", () => {
   assert.equal(C.analyzePhp({ "x-powered-by": "PHP/8.3" }).data.reason, "unknown-patch");
   assert.equal(C.analyzePhp({ "x-powered-by": "PHP/8.3" }).status, "warn");
 });
+
+test("http redirect: unencrypted middle hop, www/non-www twin, twin that doesn't resolve", () => {
+  const tlsOk = { authorized: true, protocol: "TLSv1.3" };
+  const ok = [{ url: "http://a.com/", status: 301 }, { url: "https://a.com/", status: 200 }];
+  const mid = [{ url: "http://a.com/", status: 301 }, { url: "http://www.a.com/", status: 301 }, { url: "https://www.a.com/", status: 200 }];
+  let f = byId(C.analyzeHttps({ host: "a.com", tls: tlsOk, httpChain: mid }), "http_redirect");
+  assert.equal(f.status, "warn"); assert.deepEqual(f.data.causes, ["intermediate"]); assert.match(f.evidence, /extra unencrypted step/);
+  f = byId(C.analyzeHttps({ host: "a.com", tls: tlsOk, httpChain: ok, altHost: "www.a.com", altChain: [{ url: "http://www.a.com/", status: 301 }, { url: "https://www.a.com/", status: 200 }] }), "http_redirect");
+  assert.equal(f.status, "pass"); assert.match(f.evidence, /also redirects to HTTPS/);
+  f = byId(C.analyzeHttps({ host: "a.com", tls: tlsOk, httpChain: ok, altHost: "www.a.com", altChain: [{ url: "http://www.a.com/", status: 200 }] }), "http_redirect");
+  assert.equal(f.status, "warn"); assert.deepEqual(f.data.causes, ["alt-insecure"]); assert.match(f.evidence, /www address http:\/\/www\.a\.com\/ loads without/);
+  f = byId(C.analyzeHttps({ host: "a.com", tls: tlsOk, httpChain: ok, altHost: "", altChain: null, altError: "ENOTFOUND" }), "http_redirect");
+  assert.equal(f.status, "pass", "twin that doesn't resolve costs nothing");
+  assert.equal(C.judgeRedirect("www.a.com", [{ url: "http://www.a.com/", status: 404 }], "", true), null);
+  f = byId(C.analyzeHttps({ host: "a.com", tls: tlsOk, httpChain: [{ url: "http://a.com/", status: 200 }], altHost: "www.a.com", altChain: mid.slice(1) }), "http_redirect");
+  assert.equal(f.status, "fail");
+});
+
+test("http redirect: hosted platforms own hops and the twin; a site that loads insecurely still counts", async () => {
+  const { applyRules } = await import("../api/_lib/scan.js");
+  const w = { id: "http_redirect", status: "warn", severity: "medium", data: { causes: ["intermediate", "alt-insecure"] } };
+  assert.equal(applyRules([w], { platform: "Squarespace" })[0].status, "platform");
+  assert.equal(applyRules([w], {})[0].status, "warn");
+  const fl = { id: "http_redirect", status: "fail", severity: "medium", data: { causes: ["insecure"] } };
+  assert.equal(applyRules([fl], { platform: "Wix" })[0].status, "fail");
+});

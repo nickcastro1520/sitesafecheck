@@ -69,11 +69,16 @@ export async function collect(input, { now = Date.now(), budgetMs = 24000 } = {}
   await resolvePublic(host); // fail fast with a clear error (not found / private)
   const root = host.replace(/^www\./, "");
 
-  const [mainR, httpR, legacy, email] = await Promise.all([
+  // The www / non-www twin, checked over http:// only (one ordinary GET, same SSRF guard). Only for
+  // bare two-label domains and their www form; a twin that doesn't resolve is skipped, never penalized.
+  const altHost = host.startsWith("www.") ? root : root.split(".").length === 2 ? `www.${root}` : "";
+  const altP = altHost ? resolvePublic(altHost).then(() => fetchFollow(`http://${altHost}/`, { timeout: 6000, maxBytes: 16_000 })).catch((e) => ({ error: e })) : Promise.resolve(null);
+  const [mainR, httpR, legacy, email, altR] = await Promise.all([
     fetchFollow(url, { timeout: 9000, maxBytes: 1_000_000 }).catch((e) => ({ error: e })),
     fetchFollow(`http://${host}/`, { timeout: 7000, maxBytes: 32_000 }).catch((e) => ({ error: e })),
     legacyTls(host).catch(() => ({ tested: false })),
     emailChecks(root),
+    altP,
   ]);
 
   // HTTPS facts come from the first hop to the host the visitor typed.
@@ -92,7 +97,9 @@ export async function collect(input, { now = Date.now(), budgetMs = 24000 } = {}
   const httpError = httpR.error ? errText(httpR.error) : "";
 
   const findings = [];
-  findings.push(...C.analyzeHttps({ host, httpsError, tls, legacy, httpChain, httpError, now }));
+  const altChain = altR ? (altR.final ? chainOf(altR.hops) : altR.error?.hops?.length ? chainOf(altR.error.hops) : null) : null;
+  const altError = altR?.error ? errText(altR.error) : "";
+  findings.push(...C.analyzeHttps({ host, httpsError, tls, legacy, httpChain, httpError, altHost: altChain ? altHost : "", altChain, altError, now }));
 
   let meta = { host, emailDomain: root, finalUrl: final?.url || "", status: final?.status || 0, https: false, offsite: false, cms: "", server: "" };
   if (final) {
@@ -165,6 +172,11 @@ export function applyRules(findings, meta = {}) {
   const sensitive = meta.sensitive ? meta.sensitive.any : true; // unknown: keep full weights
   return findings.map((f) => {
     if (platform && PLATFORM_HEADERS.includes(f.id)) {
+      return { ...f, status: "platform", severity: "info", controlledBy: platform, fixBy: "none", origStatus: f.status, origSeverity: f.severity };
+    }
+    // Redirect hops and the www/non-www twin are set by the platform; only the address-typed-loads-insecurely
+    // case ("insecure") still counts there.
+    if (platform && f.id === "http_redirect" && f.status === "warn" && (f.data?.causes || []).every((c) => c !== "insecure")) {
       return { ...f, status: "platform", severity: "info", controlledBy: platform, fixBy: "none", origStatus: f.status, origSeverity: f.severity };
     }
     if (!sensitive && RECOMMENDED.includes(f.id) && (f.status === "fail" || f.status === "warn")) {
