@@ -13,7 +13,9 @@ export const CATEGORIES = [
 ];
 
 // worst: one short, truthful "worst case" sentence per problem status (warn/fail), scaled to severity.
-const C = (cat, title, fixBy, what, fix, worst = {}) => ({ cat, title, fixBy, what, fix, worst });
+// opts.lockWhat: statuses whose "What this means" always stays hand-written (AI can't soften it).
+// opts.who: per-status CTA line replacing the default "Nick can fix this."
+const C = (cat, title, fixBy, what, fix, worst = {}, opts = {}) => ({ cat, title, fixBy, what, fix, worst, ...opts });
 
 export const CATALOG = {
   https_available: C("https", "HTTPS works", "nick",
@@ -89,7 +91,8 @@ export const CATALOG = {
   php_version: C("leaks", "Outdated PHP version", "nick",
     { pass: "The PHP version your site shows isn't one we know to be outdated.", warn: "Your site publicly shows which PHP version it runs. That version isn't one we know to be outdated, but showing it helps attackers pick targets the next time a PHP bug is announced.", fail: "Your site shows a PHP version that is older than the latest security fixes, or no longer supported at all. In October 2026 PHP fixed two critical flaws (nicknamed PHP2Shell) that can let attackers run code on unpatched servers. Some hosts patch PHP without changing the version number, so ask your host to confirm.", info: "We didn't see a PHP version in your site's response, so there was nothing to check." },
     { warn: "Fixed by hiding the version from your server's response, a quick setting change with your host.", fail: "Fixed by having your host update PHP to the latest patched release (Nick can help coordinate this with them), then hiding the version from your server's response." },
-    { fail: "If your server really runs an unpatched PHP version, attackers could try known flaws on it to break into the site and its data.", warn: "If a new PHP bug is announced, attackers could use the version your site shows to pick it out as a target." }),
+    { fail: "If your server really runs an unpatched PHP version, attackers could try known flaws on it to break into the site and its data.", warn: "If a new PHP bug is announced, attackers could use the version your site shows to pick it out as a target." },
+    { lockWhat: ["fail"], who: { fail: "Nick can hide the version and coordinate the update with your host." } }),
   directory_listing: C("leaks", "Directory listing", "refer",
     { pass: "We didn't find any folders that publicly list their files.", fail: "Some folders on your site show a public list of every file inside, which can expose files you didn't mean to publish." },
     { fail: "Fixed with a server configuration change by your developer or host, who should also check what was exposed." },
@@ -125,5 +128,6 @@ export function fallbackText(f) {
   const fix = st === "pass" ? "" : c.fix[st] || ((st === "warn" || st === "fail") ? c.fix[alt] || "" : "");
   const bad = st === "warn" || st === "fail";
   const worst = bad ? c.worst[st] || c.worst[alt] || "" : "";
-  return { what, fix, worst };
+  const who = (c.who && c.who[st]) || "";
+  return { what, fix, worst, ...(who ? { who } : {}) };
 }

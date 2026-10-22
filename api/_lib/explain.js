@@ -76,7 +76,7 @@ function attachFallback(f) {
   if (f.status === "platform") return { ...f, what: PLATFORM_NOTE, fix: "", textSource: "fallback" };
   const t = fallbackText(f);
   const bad = f.status === "fail" || f.status === "warn";
-  return { ...f, what: t.what, fix: t.fix, ...(bad && t.worst ? { worst: t.worst, worstSource: "fallback" } : {}), textSource: "fallback" };
+  return { ...f, what: t.what, fix: t.fix, ...(t.who ? { who: t.who } : {}), ...(bad && t.worst ? { worst: t.worst, worstSource: "fallback" } : {}), textSource: "fallback" };
 }
 
 // Returns { findings, summary, ai: { used, model, reason } }
@@ -106,6 +106,8 @@ export async function explain(findings, ctx, { useAi = true, scoreInfo } = {}) {
       // A worst case that fails the filters keeps the hand-written one.
       const w = ai.worst ? { worst: ai.worst, worstSource: "ai" } : {};
       // "How it's fixed" (and the refer-out wording) always stays the hand-written catalog line.
+      // Some statuses (e.g. an unpatched PHP version) always keep the hand-written explanation.
+      if ((CATALOG[f.id]?.lockWhat || []).includes(f.status)) return { ...f, ...w, textSource: "fallback" };
       return { ...f, what: ai.what, ...w, textSource: "ai" };
     });
     const s = clean(j.summary, 700);

@@ -192,7 +192,7 @@
     if (f.what) card.append(h("p", {}, h("span", { class: "lab", text: bad ? "What this means: " : "" }), f.what));
     if (bad && f.worst) card.append(h("p", { class: "worst" }, h("span", { class: "wicon", "aria-hidden": "true", text: "!" }), h("span", { class: "lab", text: "Worst case: " }), f.worst));
     if (bad && f.fix) card.append(h("p", {}, h("span", { class: "lab", text: "How it's fixed: " }), f.fix));
-    if (bad && f.fixBy === "nick") card.append(h("p", { class: "who", text: "Nick can fix this." }));
+    if (bad && f.fixBy === "nick") card.append(h("p", { class: "who", text: f.who || "Nick can fix this." }));
     if (bad && f.fixBy === "refer") card.append(h("p", { class: "who refer", text: "Have your developer, host, or a security professional handle this urgently. Nick can refer you out." }));
     return card;
   }

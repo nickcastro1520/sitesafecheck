@@ -28,7 +28,7 @@ export const HEAD = GET;
 
 // Only what the read-only page shows: keeps stored values small.
 export function slim(r) {
-  const pick = (f) => ({ id: f.id, title: f.title, category: f.category, status: f.status, severity: f.severity, evidence: String(f.evidence || "").slice(0, 400), what: f.what || "", worst: f.worst || "", fix: f.fix || "", fixBy: f.fixBy, controlledBy: f.controlledBy, recommended: f.recommended || undefined });
+  const pick = (f) => ({ id: f.id, title: f.title, category: f.category, status: f.status, severity: f.severity, evidence: String(f.evidence || "").slice(0, 400), what: f.what || "", worst: f.worst || "", fix: f.fix || "", fixBy: f.fixBy, controlledBy: f.controlledBy, recommended: f.recommended || undefined, who: f.who || undefined });
   return { host: r.host, createdAt: r.createdAt, meta: { platform: r.meta?.platform || "", cms: r.meta?.cms || "", finalUrl: r.meta?.finalUrl || "" }, score: { score: r.score.score, grade: r.score.grade, counts: r.score.counts }, summary: r.summary, categories: r.categories, findings: r.findings.map(pick), ai: { used: Boolean(r.ai?.used) }, scope: r.scope };
 }
 

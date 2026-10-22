@@ -12,6 +12,7 @@ A free, passive website security checker for small business owners. Enter a URL 
 - Open pull requests: none.
 
 ## Decisions (newest first)
+- 2026-10-22: PHP failures always use the hand-written "What this means" (catalog `lockWhat`), because the AI softened it to "stability and reliability". The PHP fail CTA reads "Nick can hide the version and coordinate the update with your host." (catalog `who`) instead of "Nick can fix this.", since PHP upgrades are host work.
 - 2026-10-22: Added a passive "Outdated PHP version" check (info leaks) for PHP2Shell (CVE-2026-109618/109619). It reads only the X-Powered-By and Server headers already fetched. Fail (medium, 8 pts, no 69 cap) if below the patched release per branch (8.2.35, 8.3.36, 8.4.27, 8.5.12, per php.net 21 Oct 2026) or end of life (below 8.2); warn (low) if the version is shown but current; skipped if no PHP version is visible. Medium, not high, because hosts often backport fixes without changing the number. Hiding the banner is a Nick fix; PHP upgrades are host work Nick can help coordinate.
 - 2026-10-21: Added AGENTS.md so every AI on this repo stays in sync.
 - 2026-10-20: SEO approval period. Through 2026-11-16, ranking changes are only proposed and go live after Nick OKs them. From 2026-11-23, allowed changes can be made directly, logged and committed first.

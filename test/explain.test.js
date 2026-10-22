@@ -123,3 +123,26 @@ test("AI 'what' text that leaks a fix snippet falls back; worst-case filters", a
   for (const leak of ["max-age=31536000", "v=spf1 include:_spf.google.com ~all", "set p=reject", "```nginx", "<meta>", "X-Frame-Options: SAMEORIGIN", "Options -Indexes", "Step 1: open Settings"]) assert.ok(SNIPPET.test(leak), leak);
   assert.ok(!SNIPPET.test("Browsers aren't told to always use HTTPS on your site, so a first visit could be intercepted."));
 });
+
+test("PHP failures keep the hand-written explanation and get their own CTA line", async () => {
+  const fs = decorate([
+    { id: "php_version", status: "fail", severity: "medium", evidence: "X-Powered-By header shows PHP 8.1.35." },
+    { id: "hsts", status: "fail", severity: "medium", evidence: "No Strict-Transport-Security header." },
+  ]);
+  mockGemini(() => ok({ summary: "A couple of settings need attention on this site.", items: [
+    { id: "php_version", what: "This PHP version may not have the latest improvements for stability and reliability.", worst: "If unpatched, someone could try known flaws on it to get into the site." },
+    { id: "hsts", what: "Browsers aren't told to stick to HTTPS on your site.", worst: "Someone on public Wi-Fi could quietly downgrade a visitor's first visit." },
+  ] }));
+  const r = await explain(fs, ctx, { useAi: true, scoreInfo: scoreFindings(fs) });
+  const php = r.findings.find((f) => f.id === "php_version");
+  assert.match(php.what, /critical flaws/);
+  assert.doesNotMatch(php.what, /stability/);
+  assert.equal(php.who, "Nick can hide the version and coordinate the update with your host.");
+  assert.equal(r.findings.find((f) => f.id === "hsts").textSource, "ai");
+  assert.equal(r.findings.find((f) => f.id === "hsts").who, undefined);
+  const { fallbackText } = await import("../api/_lib/catalog.js");
+  assert.equal(fallbackText({ id: "php_version", status: "warn" }).who, undefined);
+  const { savedPage } = await import("../api/_lib/share-page.js");
+  const html = savedPage({ host: "a.com", createdAt: new Date().toISOString(), meta: {}, categories: [{ id: "leaks", title: "Information leaks" }, { id: "headers", title: "Security headers" }], score: scoreFindings(fs), summary: "x", findings: r.findings }, "abc123", {});
+  assert.match(html, /Nick can hide the version and coordinate the update with your host\./);
+});
