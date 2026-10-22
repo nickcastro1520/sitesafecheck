@@ -63,7 +63,7 @@
 
 <h2>What it checks</h2>
 <ul>
- <li><strong>HTTPS &amp; certificate:</strong> whether HTTPS works, http:// redirects to it, the certificate is trusted and not close to expiring, the TLS version, whether old TLS 1.0/1.1 is still accepted, and insecure (mixed) content on the home page.</li>
+ <li><strong>HTTPS &amp; certificate:</strong> whether HTTPS works, http:// redirects to it (every step, for both the www and non-www address; see <a href="/chrome-asks-before-opening-my-website">why Chrome now asks before opening some sites</a>), the certificate is trusted and not close to expiring, the TLS version, whether old TLS 1.0/1.1 is still accepted, and insecure (mixed) content on the home page.</li>
  <li><strong>Security headers:</strong> Strict-Transport-Security (HSTS), Content-Security-Policy, X-Frame-Options / frame-ancestors, X-Content-Type-Options, Referrer-Policy, and Permissions-Policy.</li>
  <li><strong>Email spoofing protection:</strong> SPF, the DMARC policy, DKIM on common selector names (if we don't find it, we say "not found on common selectors", because your provider may use a name we didn't try), and MX records for context. If someone is already sending fake emails from your address, see <a href="/someone-sending-emails-from-my-domain">what to do when someone is sending emails from your domain</a>.</li>
  <li><strong>Information leaks:</strong> software version numbers in headers, public folder listings, a short list of files that should never be public (like <code>.env</code>, <code>.git</code>, database backups, and phpinfo pages), and whether you publish a <code>security.txt</code>.</li>

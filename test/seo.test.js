@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 
-const PAGES = { "/": "index", "/about": "about", "/privacy": "privacy", "/how-i-built-this": "how-i-built-this", "/someone-sending-emails-from-my-domain": "someone-sending-emails-from-my-domain" };
+const PAGES = { "/": "index", "/about": "about", "/privacy": "privacy", "/how-i-built-this": "how-i-built-this", "/someone-sending-emails-from-my-domain": "someone-sending-emails-from-my-domain", "/chrome-asks-before-opening-my-website": "chrome-asks-before-opening-my-website" };
 const read = (f) => readFile(new URL(`../public/${f}`, import.meta.url), "utf8");
 
 test("indexable pages: unique title, description, h1, self canonical, valid JSON-LD with breadcrumbs", async () => {
@@ -24,6 +24,7 @@ test("indexable pages: unique title, description, h1, self canonical, valid JSON
     if (path === "/") { assert.ok(types.includes("WebApplication") && types.includes("FAQPage")); }
     else assert.ok(types.includes("BreadcrumbList"), `${path} breadcrumbs`);
     if (path === "/how-i-built-this") assert.ok(types.includes("Article"));
+    if (path.startsWith("/chrome-") || path.startsWith("/what-is-")) assert.ok(["Article", "FAQPage", "HowTo"].every((t) => types.includes(t)));
     if (path === "/someone-sending-emails-from-my-domain") assert.ok(["Article", "FAQPage", "HowTo"].every((t) => types.includes(t)));
     const text = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<[^>]+>/g, " ").replace(/\s+/g, " ");
     assert.ok(text.length > 1500, `${path} main content is in the static HTML`);
@@ -65,4 +66,18 @@ test("email spoofing guide: guardrails, CTAs, internal links, no paid offer in t
   const faq = ld["@graph"].find((n) => n["@type"] === "FAQPage");
   assert.equal(faq.mainEntity.length, (html.match(/<details>/g) || []).length);
   for (const f of ["index.html", "about.html", "llms.txt", "sitemap.xml"]) assert.match(await read(f), /someone-sending-emails-from-my-domain/, f);
+});
+
+test("Chrome HTTP guide: sourced facts only, no ranking claims, no 'turn it off' advice, CTAs and links", async () => {
+  const html = await read("chrome-asks-before-opening-my-website.html");
+  assert.match(html, /Chrome 154/); assert.match(html, /about two weeks/); assert.match(html, /15 days/);
+  assert.match(html, /blog\.google\/security\/chrome-now-warns-before-insecure-http-connections/);
+  assert.doesNotMatch(html, /Grok|Cursor|\d+\s?%|penetration|breach/i);
+  assert.doesNotMatch(html, /(hurts?|lowers?|drops?) (your )?(ranking|traffic)/i);
+  assert.match(html, /Should I tell visitors to turn the setting off\?[\s\S]*?No\./);
+  assert.match(html, /\$250–\$500/); assert.match(html, /\$50–\$100\/month/);
+  assert.ok((html.match(/<a class="btn btn-(dark|light)" href="\/">/g) || []).length >= 3);
+  const ld = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+  assert.equal(ld["@graph"].find((n) => n["@type"] === "FAQPage").mainEntity.length, (html.match(/<details>/g) || []).length);
+  for (const f of ["index.html", "about.html", "llms.txt", "sitemap.xml"]) assert.match(await read(f), /chrome-asks-before-opening-my-website/, f);
 });

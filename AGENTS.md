@@ -9,9 +9,11 @@ A free, passive website security checker for small business owners. Enter a URL 
 - Live features: an outdated-PHP check (PHP2Shell), a streamed report, platform detection (Wix, Squarespace, Shopify, GoDaddy, Webflow, WordPress.com), "worst case" lines, a fix CTA, share links, a sample demo, and a /how-i-built-this page.
 - SEO is fully set up: GA4 on Nick's personal account, Search Console (verified, sitemap submitted), JSON-LD, IndexNow (daily workflow), and Lighthouse 100 on all pages.
 - In progress: the weekly Google ranking program (rules in `/workspace/seo/RULES.md` on Grok's computer). The first run is Mon 2026-10-26.
+- In progress (local branch `page/chrome-http`, NOT published, not pushed): /chrome-asks-before-opening-my-website. Waiting for Nick's OK.
 - Open pull requests: none.
 
 ## Decisions (newest first)
+- 2026-10-22: Chrome ask-before-HTTP guide built on a local branch only. Facts only from Google's Oct 21, 2026 blog and Chrome's adoption guide; no ranking claims, no prompt quote (not captured), "about two weeks" for the remembered yes.
 - 2026-10-22: http_redirect now warns (medium) on any plain-HTTP hop after the first (http://a → http://www.a → https) and passively checks the www/non-www twin over http:// (one GET; skipped with no deduction if it doesn't resolve or isn't served). Copy cites Chrome asking before insecure HTTP for all users (Google blog, Oct 21, 2026). On hosted platforms these warnings show as "Controlled by"; a typed address that loads without HTTPS still fails.
 - 2026-10-22: Published the email spoofing guide after Nick's OK.
 - 2026-10-22: Gemini order is now 3.1-flash-lite, 3.5-flash, 3.5-flash-lite, 3.8-flash. Probes that day: 3.5-flash-lite timed out at 9s three times (it was costing cold starts 9s), 3.8-flash returned 503 three times so it was NOT moved up, and 3.1-flash-lite and 3.5-flash answered in about 1s.

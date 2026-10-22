@@ -25,6 +25,7 @@
 - [Run a free check](https://sitesafecheck.com/)
 - [About and methodology](https://sitesafecheck.com/about)
 - [Someone is sending emails from my domain](https://sitesafecheck.com/someone-sending-emails-from-my-domain): plain-English guide for small businesses to tell a forged From address (spoofing) from a hacked mailbox, and how SPF, DKIM and DMARC stop forgeries in stages. Hacked accounts are referred to specialists.
+- [Why does Chrome ask before opening my website?](https://sitesafecheck.com/chrome-asks-before-opening-my-website): plain-English guide to Chrome's ask-before-HTTP prompt (on by default in Chrome 154), the usual cause (an HTTP-only bare domain or redirect step), and how to make every step HTTPS.
 - [How I built this](https://sitesafecheck.com/how-i-built-this): how Nick Castro built SiteSafeCheck with AI tools (one batched Gemini call per scan with hand-written fallbacks and honesty filters, Vercel, GitHub, passive checks, SSRF protection, rate limits, caching, automated tests) and the tradeoffs behind it
 - [Privacy](https://sitesafecheck.com/privacy)
 - [Built by Nick Castro](https://nickcastrobuilds.com/)
