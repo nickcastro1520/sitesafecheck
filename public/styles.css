@@ -205,3 +205,14 @@ footer nav{display:flex;gap:16px;flex-wrap:wrap}
 .shared .rhead{margin:0 0 18px}
 .shared h1{margin:0 0 6px}
 .shared .cta p{color:#d5e2f2}.shared .cta h2{margin-top:0;color:#fff}
+.article .kicker{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0f766e;margin:0 0 8px}
+.article h3{font-size:18px;margin:22px 0 6px}
+.article .cta-inline{margin:14px 0 0}
+.article .tablewrap{overflow-x:auto;margin:14px 0}
+.article table.cmp{border-collapse:collapse;width:100%;font-size:15px;min-width:600px}
+.article table.cmp th,.article table.cmp td{border:1px solid #dbe3ec;padding:9px 10px;text-align:left;vertical-align:top}
+.article table.cmp thead th{background:#0b1f3a;color:#fff}
+.article table.cmp tbody th{background:#f1f5f9}
+.article .refer-note{border-left:4px solid #b45309;background:#fff7ed;padding:12px 14px;border-radius:6px}
+.article aside.cta{margin:30px 0;padding:22px;border-radius:12px}
+.article aside.cta p{color:#d5e2f2}

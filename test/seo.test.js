@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 
-const PAGES = { "/": "index", "/about": "about", "/privacy": "privacy", "/how-i-built-this": "how-i-built-this" };
+const PAGES = { "/": "index", "/about": "about", "/privacy": "privacy", "/how-i-built-this": "how-i-built-this", "/someone-sending-emails-from-my-domain": "someone-sending-emails-from-my-domain" };
 const read = (f) => readFile(new URL(`../public/${f}`, import.meta.url), "utf8");
 
 test("indexable pages: unique title, description, h1, self canonical, valid JSON-LD with breadcrumbs", async () => {
@@ -24,6 +24,7 @@ test("indexable pages: unique title, description, h1, self canonical, valid JSON
     if (path === "/") { assert.ok(types.includes("WebApplication") && types.includes("FAQPage")); }
     else assert.ok(types.includes("BreadcrumbList"), `${path} breadcrumbs`);
     if (path === "/how-i-built-this") assert.ok(types.includes("Article"));
+    if (path === "/someone-sending-emails-from-my-domain") assert.ok(["Article", "FAQPage", "HowTo"].every((t) => types.includes(t)));
     const text = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<[^>]+>/g, " ").replace(/\s+/g, " ");
     assert.ok(text.length > 1500, `${path} main content is in the static HTML`);
   }
@@ -50,4 +51,18 @@ test("IndexNow: key file served from public/, script posts sitemap URLs with key
   assert.match(s, /https:\/\/api\.indexnow\.org\/indexnow/); assert.match(s, /keyLocation/); assert.match(s, /host: HOST/);
   const wf = await readFile(new URL("../.github/workflows/indexnow.yml", import.meta.url), "utf8");
   assert.match(wf, /cron: "37 14 \* \* \*"/); assert.match(wf, /workflow_dispatch/);
+});
+
+test("email spoofing guide: guardrails, CTAs, internal links, no paid offer in the hacked section", async () => {
+  const html = await read("someone-sending-emails-from-my-domain.html");
+  const hacked = html.slice(html.indexOf('id="if-hacked"'), html.indexOf('id="why"'));
+  assert.match(hacked, /specialist/); assert.match(hacked, /isn't something a DNS fix solves/);
+  assert.doesNotMatch(hacked, /\$|tel:|mailto:|Nick can/);
+  assert.match(html, /\$250–\$500/); assert.match(html, /\$50–\$100\/month/);
+  assert.ok((html.match(/<a class="btn btn-(dark|light)" href="\/">/g) || []).length >= 2, "free-check CTAs");
+  assert.doesNotMatch(html, /Grok|Cursor|stops all spoofing|guarantee|\d+\s?%/i);
+  const ld = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+  const faq = ld["@graph"].find((n) => n["@type"] === "FAQPage");
+  assert.equal(faq.mainEntity.length, (html.match(/<details>/g) || []).length);
+  for (const f of ["index.html", "about.html", "llms.txt", "sitemap.xml"]) assert.match(await read(f), /someone-sending-emails-from-my-domain/, f);
 });

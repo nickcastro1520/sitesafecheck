@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Someone Is Sending Emails From My Domain: Forged or Hacked? (and How to Stop It)</title>
+<meta name="description" content="Getting bounce-backs or phishing &quot;from&quot; your own address? Learn if it&#x27;s forged or a hacked mailbox, and how SPF, DKIM and DMARC stop the fakes.">
+<link rel="canonical" href="https://sitesafecheck.com/someone-sending-emails-from-my-domain">
+<meta name="theme-color" content="#0b1f3a">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="SiteSafeCheck">
+<meta property="og:url" content="https://sitesafecheck.com/someone-sending-emails-from-my-domain">
+<meta property="og:title" content="Someone Is Sending Emails From My Domain: Forged or Hacked? (and How to Stop It)">
+<meta property="og:description" content="Getting bounce-backs or phishing &quot;from&quot; your own address? Learn if it&#x27;s forged or a hacked mailbox, and how SPF, DKIM and DMARC stop the fakes.">
+<meta property="og:image" content="https://sitesafecheck.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SiteSafeCheck: free website security check for small businesses">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/styles.css">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Home",
+     "item": "https://sitesafecheck.com/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "Someone is sending emails from my domain",
+     "item": "https://sitesafecheck.com/someone-sending-emails-from-my-domain"
+    }
+   ]
+  },
+  {
+   "@type": "Article",
+   "headline": "Someone is sending emails from my domain. What's going on, and how do I stop it?",
+   "description": "Getting bounce-backs or phishing \"from\" your own address? Learn if it's forged or a hacked mailbox, and how SPF, DKIM and DMARC stop the fakes.",
+   "url": "https://sitesafecheck.com/someone-sending-emails-from-my-domain",
+   "mainEntityOfPage": "https://sitesafecheck.com/someone-sending-emails-from-my-domain",
+   "inLanguage": "en-US",
+   "image": "https://sitesafecheck.com/og.png",
+   "datePublished": "2026-10-22",
+   "dateModified": "2026-10-22",
+   "author": {
+    "@type": "Person",
+    "name": "Nick Castro",
+    "url": "https://nickcastrobuilds.com"
+   },
+   "publisher": {
+    "@type": "Organization",
+    "name": "SiteSafeCheck",
+    "url": "https://sitesafecheck.com/"
+   }
+  },
+  {
+   "@type": "HowTo",
+   "name": "How to stop scammers forging your domain in email",
+   "step": [
+    {
+     "@type": "HowToStep",
+     "position": 1,
+     "name": "List everything that sends as you",
+     "text": "Your email host, invoicing, booking, website forms and newsletter tool."
+    },
+    {
+     "@type": "HowToStep",
+     "position": 2,
+     "name": "Publish one SPF record",
+     "text": "Include each sender, ending in a hard fail."
+    },
+    {
+     "@type": "HowToStep",
+     "position": 3,
+     "name": "Turn on DKIM at each sender",
+     "text": "Each service gives you a key to publish."
+    },
+    {
+     "@type": "HowToStep",
+     "position": 4,
+     "name": "Publish DMARC in monitor mode",
+     "text": "A policy of none, with reports sent to you."
+    },
+    {
+     "@type": "HowToStep",
+     "position": 5,
+     "name": "Review the reports",
+     "text": "Add any real sender that's failing."
+    },
+    {
+     "@type": "HowToStep",
+     "position": 6,
+     "name": "Move to quarantine",
+     "text": "Failing mail goes to spam."
+    },
+    {
+     "@type": "HowToStep",
+     "position": 7,
+     "name": "Move to reject",
+     "text": "Failing mail is refused."
+    }
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Does this mean my email was hacked?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Usually not. Most of the time a scammer is only forging your address in the From line. Check your Sent folder: if the messages aren't there and you don't see unfamiliar sign-ins or inbox rules, it's spoofing. If they are there, treat it as a hacked account and get a specialist."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Why didn't changing my password stop it?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Because the forgers never had your password. They type your address into the From line on their own mail server. What stops it is publishing SPF, DKIM and DMARC records for your domain, which tell receiving servers how to spot and reject the fakes."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Can I stop people from using my email address completely?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "For your exact domain, a DMARC policy of reject tells receiving servers that honor it to refuse mail that fails the checks. It can't stop lookalike domains (one letter off) or a fake display name on a free email account, and not every receiver enforces DMARC."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Will setting up DMARC break my email?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Not if you roll it out in stages. Start with a monitor-only policy that changes nothing and sends you reports, add every service that sends as you, and tighten only once the reports show your real mail passing. Jumping straight to the strictest setting can block your own invoices or website form emails."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "How long does the fix take?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "The records themselves publish quickly. The safe part is the rollout: you watch the reports for a while (often a couple of weeks, or one full billing cycle so invoices are covered) before tightening the policy. How long depends on how many services send email as you."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Should I tell my customers?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Yes, briefly. Let them know scammers have been forging your address, that you never ask for payment or bank changes by email, and that they should call you on a number they already have to confirm any unusual request."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "What are these bounce-backs for emails I never sent?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "They're usually called backscatter. A forged message was sent with your address on it, the recipient's server couldn't deliver it, and the \"undeliverable\" notice came back to you. They aren't proof your account is hacked. Mark them as spam, and they should slow down once DMARC is enforced."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Is a Gmail address protected the same way?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "No. If your address ends in gmail.com you can't set DNS records for it; Google manages that. Follow Gmail's own guidance for spoofed addresses. This page is for businesses that use their own domain, like you@yourbusiness.com."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+
+<!--GA-->
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+ <div class="wrap">
+  <a class="logo" href="/" aria-label="SiteSafeCheck home"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6 11 14v16c0 13.4 8.9 23.8 21 27.6C44.1 53.8 53 43.4 53 30V14L32 6Z" fill="#14907d"/><path d="m22 32 7 7 13-14" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>SiteSafeCheck</a>
+  <nav class="main" aria-label="Main"><a href="/#what">What we check</a><a href="/#fixes">Get it fixed</a><a href="/#faq">FAQ</a><a href="/about">About</a></nav>
+ </div>
+</header>
+<main id="main" class="wrap page article">
+<p class="kicker">Email spoofing help</p>
+<h1>Someone is sending emails from my domain. What's going on, and how do I stop it?</h1>
+<p class="lede-dark">Bounce-backs for messages you never wrote, or a customer asking "did you send this?" is scary. Take a breath: in most cases, nobody is inside your email.</p>
+
+<h2 id="short-answer">The short answer</h2>
+<p><strong>Usually nobody is inside your email. Scammers are forging your address in the "From" line, which is easy when your domain is missing SPF, DKIM and a strict DMARC policy. Check your Sent folder first: if the messages aren't there, it's spoofing, and fixing those three DNS records is what stops it. If they are there, or you see strange sign-ins or inbox rules, treat it as a hacked account and get a specialist.</strong></p>
+<p class="cta-inline"><a class="btn btn-dark" href="/">Check your domain's email protection free in 10 seconds</a></p>
+
+<h2 id="three-lookalikes">Three things that look the same from the outside</h2>
+<p>From your customer's inbox, these three problems can look identical. They have very different fixes.</p>
+<div class="tablewrap"><table class="cmp">
+<caption class="sr">Spoofing, hacked mailbox, and lookalike domain compared</caption>
+<thead><tr><th scope="col"></th><th scope="col">Forged address (spoofing)</th><th scope="col">Hacked mailbox</th><th scope="col">Lookalike domain or name</th></tr></thead>
+<tbody>
+<tr><th scope="row">What's happening</th><td>A scammer's server puts your address in the From line</td><td>Someone has your password or a session and sends from your real account</td><td>A domain one letter off, or just your name as the display name on a free account</td></tr>
+<tr><th scope="row">Signs</th><td>Bounce-backs you didn't cause; nothing in your Sent folder</td><td>Odd messages in Sent, new inbox rules or forwarding, unfamiliar sign-ins</td><td>The address looks right at a glance but isn't your domain</td></tr>
+<tr><th scope="row">Does DMARC fix it?</th><td><strong>Yes</strong>, at receivers that enforce it</td><td><strong>No.</strong> Mail from your real account passes the checks</td><td><strong>No.</strong> It's not your domain</td></tr>
+<tr><th scope="row">What helps</th><td>SPF, DKIM and DMARC records</td><td>A specialist, your email provider's support, password reset and two-step verification</td><td>Warning customers, spam filtering, reporting the domain</td></tr>
+</tbody></table></div>
+
+<h2 id="forged-or-hacked">Forged or hacked? A 2-minute check</h2>
+<h3>Step 1: Look in your Sent folder</h3>
+<p>Search Sent for the subject or recipient of one of the strange messages. If it isn't there, that points to forgery: the message never left your account.</p>
+<h3>Step 2: Review recent sign-ins and inbox rules</h3>
+<p>On Google Workspace or Gmail, run Google's Security Checkup and look at recent devices and activity. On Microsoft 365, ask whoever manages it to check the sign-in logs. In either one, look for inbox rules or forwarding you didn't create. Hidden forwarding rules are a common sign of a hacked mailbox.</p>
+<h3>Step 3: Ask a recipient to forward one "as an attachment"</h3>
+<p>Forwarding as an attachment keeps the original technical headers. In them, look for a line called Authentication-Results. If it says <code>dmarc=fail</code> (or SPF and DKIM both fail for your domain), the message almost certainly didn't come from your systems.</p>
+<h3 id="if-hacked">If it looks hacked: stop and get help</h3>
+<p>Change the password, turn on two-step verification, and contact your email provider's support or an IT or incident-response specialist right away. They can sign out other sessions, remove bad rules and check what was accessed.</p>
+<p class="refer-note"><strong>This isn't something a DNS fix solves.</strong> SiteSafeCheck refers hacked accounts to specialists; it doesn't handle account recovery, breach cleanup or malware.</p>
+
+<h2 id="why">Why scammers can use your address</h2>
+<p>Email was designed in a more trusting era. The From line is just text the sender types, a bit like a return address on an envelope. Nothing in the original design checks it. Three DNS records (public settings for your domain) were added later to fix that:</p>
+<ul>
+ <li><strong>SPF (Sender Policy Framework)</strong> is a guest list: the servers allowed to send email as your domain.</li>
+ <li><strong>DKIM (DomainKeys Identified Mail)</strong> is a tamper seal: a digital signature that proves a message really came from your domain and wasn't changed on the way.</li>
+ <li><strong>DMARC (Domain-based Message Authentication, Reporting and Conformance)</strong> is the instructions: it tells receiving servers what to do with mail that fails those checks (nothing, spam folder, or reject) and sends you reports about who is sending as you.</li>
+</ul>
+<p>Without a strict DMARC policy, many receivers have to guess, and forged mail can land in your customers' inboxes. The same records also help your real email avoid the spam folder.</p>
+
+<h2 id="stop-it">How to stop the forgeries (if it's spoofing)</h2>
+<h3>1. List everything that sends email as you</h3>
+<p>Your email host (Google Workspace, Microsoft 365 and so on), plus anything that sends on your behalf: invoicing, booking or scheduling tools, your website's contact form, and your newsletter service. Missing one is the most common way a rollout blocks real mail.</p>
+<h3>2. SPF: one record that lists every sender</h3>
+<p>Your domain should have exactly one SPF record. It includes each sender from your list and ends with a hard fail, which tells receivers everything else isn't allowed. Two SPF records, or one with too many lookups, can quietly break it.</p>
+<h3>3. DKIM: turn it on at each sender</h3>
+<p>Each service that sends as you has a DKIM setting. It gives you a key to publish in your DNS, and then it signs your mail.</p>
+<h3>4. DMARC: tighten in stages</h3>
+<p>Start with a monitor-only policy (<code>p=none</code>) that changes nothing and sends you reports. Once the reports show your real mail passing, move to quarantine (failures go to spam), then reject (failures are refused). Don't jump straight to reject: it can block your own invoices or form emails if a sender was missed.</p>
+<h3>If you're on Google Workspace, Microsoft 365 or GoDaddy</h3>
+<p>Google Workspace and Microsoft 365 both have DKIM switches in their admin consoles, and both publish the SPF value to include. If you bought Microsoft 365 through GoDaddy, the DNS usually lives at GoDaddy too. Some IT admins on Reddit report that these bundles didn't come with a strict DMARC policy, so it's worth checking yours rather than assuming.</p>
+
+<aside class="cta" aria-labelledby="cta-main">
+ <h2 id="cta-main">See where your domain stands</h2>
+ <p>The free check shows your SPF, DKIM and DMARC status in plain English, with no signup.</p>
+ <p class="ractions"><a class="btn btn-light" href="/">Run the free check</a></p>
+ <p>Or have Nick set it up safely in stages: a one-time email protection fix is $250–$500. A monthly re-scan and watch ($50–$100/month) catches changes later, like a new tool that starts sending as you.</p>
+ <p class="ractions"><a class="btn btn-ghost" href="tel:+17082501040">Call (708) 250-1040</a><a class="btn btn-ghost" href="mailto:nickcastro1520@gmail.com?subject=Email%20spoofing%20protection">Email Nick</a></p>
+</aside>
+
+<h2 id="limits">What DMARC won't fix</h2>
+<ul>
+ <li><strong>A hacked account.</strong> Mail sent from your real mailbox passes every check. That needs a specialist (see <a href="#if-hacked">above</a>).</li>
+ <li><strong>Lookalike domains and fake display names.</strong> They aren't your domain, so your records don't apply. Warn customers and report them.</li>
+ <li><strong>Every receiver, instantly.</strong> Not every mail server enforces DMARC, and bounce-backs from forgeries already in flight can keep arriving for a while. They should slow down once your policy is strict.</li>
+</ul>
+
+<h2 id="faq">Frequently asked questions</h2>
+<div class="faq">
+<details><summary>Does this mean my email was hacked?</summary><p>Usually not. Most of the time a scammer is only forging your address in the From line. Check your Sent folder: if the messages aren&#x27;t there and you don&#x27;t see unfamiliar sign-ins or inbox rules, it&#x27;s spoofing. If they are there, treat it as a hacked account and get a specialist.</p></details>
+<details><summary>Why didn&#x27;t changing my password stop it?</summary><p>Because the forgers never had your password. They type your address into the From line on their own mail server. What stops it is publishing SPF, DKIM and DMARC records for your domain, which tell receiving servers how to spot and reject the fakes.</p></details>
+<details><summary>Can I stop people from using my email address completely?</summary><p>For your exact domain, a DMARC policy of reject tells receiving servers that honor it to refuse mail that fails the checks. It can&#x27;t stop lookalike domains (one letter off) or a fake display name on a free email account, and not every receiver enforces DMARC.</p></details>
+<details><summary>Will setting up DMARC break my email?</summary><p>Not if you roll it out in stages. Start with a monitor-only policy that changes nothing and sends you reports, add every service that sends as you, and tighten only once the reports show your real mail passing. Jumping straight to the strictest setting can block your own invoices or website form emails.</p></details>
+<details><summary>How long does the fix take?</summary><p>The records themselves publish quickly. The safe part is the rollout: you watch the reports for a while (often a couple of weeks, or one full billing cycle so invoices are covered) before tightening the policy. How long depends on how many services send email as you.</p></details>
+<details><summary>Should I tell my customers?</summary><p>Yes, briefly. Let them know scammers have been forging your address, that you never ask for payment or bank changes by email, and that they should call you on a number they already have to confirm any unusual request.</p></details>
+<details><summary>What are these bounce-backs for emails I never sent?</summary><p>They&#x27;re usually called backscatter. A forged message was sent with your address on it, the recipient&#x27;s server couldn&#x27;t deliver it, and the &quot;undeliverable&quot; notice came back to you. They aren&#x27;t proof your account is hacked. Mark them as spam, and they should slow down once DMARC is enforced.</p></details>
+<details><summary>Is a Gmail address protected the same way?</summary><p>No. If your address ends in gmail.com you can&#x27;t set DNS records for it; Google manages that. Follow Gmail&#x27;s own guidance for spoofed addresses. This page is for businesses that use their own domain, like you@yourbusiness.com.</p></details>
+</div>
+
+<p>Want the bigger picture? The <a href="/">free SiteSafeCheck</a> also looks at HTTPS, security headers and other common gaps, and <a href="/about">the About page</a> explains exactly what it checks and what it can't see.</p>
+</main>
+<footer>
+ <div class="wrap">
+  <span>Built by <a href="https://nickcastrobuilds.com">Nick Castro</a> · <a href="tel:+17082501040">(708) 250-1040</a> · <a href="mailto:nickcastro1520@gmail.com">nickcastro1520@gmail.com</a></span>
+  <nav aria-label="Footer"><a href="/someone-sending-emails-from-my-domain">Emails sent from your domain?</a><a href="/how-i-built-this">How I built this</a><a href="/about">About</a><a href="/privacy">Privacy</a><a href="https://doesaiknowmybusiness.com">Does AI Know My Business (free AI check)</a><a href="/llms.txt">llms.txt</a></nav>
+ </div>
+</footer>
+</body>
+</html>

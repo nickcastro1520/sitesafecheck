@@ -65,7 +65,7 @@
 <ul>
  <li><strong>HTTPS &amp; certificate:</strong> whether HTTPS works, http:// redirects to it, the certificate is trusted and not close to expiring, the TLS version, whether old TLS 1.0/1.1 is still accepted, and insecure (mixed) content on the home page.</li>
  <li><strong>Security headers:</strong> Strict-Transport-Security (HSTS), Content-Security-Policy, X-Frame-Options / frame-ancestors, X-Content-Type-Options, Referrer-Policy, and Permissions-Policy.</li>
- <li><strong>Email spoofing protection:</strong> SPF, the DMARC policy, DKIM on common selector names (if we don't find it, we say "not found on common selectors", because your provider may use a name we didn't try), and MX records for context.</li>
+ <li><strong>Email spoofing protection:</strong> SPF, the DMARC policy, DKIM on common selector names (if we don't find it, we say "not found on common selectors", because your provider may use a name we didn't try), and MX records for context. If someone is already sending fake emails from your address, see <a href="/someone-sending-emails-from-my-domain">what to do when someone is sending emails from your domain</a>.</li>
  <li><strong>Information leaks:</strong> software version numbers in headers, public folder listings, a short list of files that should never be public (like <code>.env</code>, <code>.git</code>, database backups, and phpinfo pages), and whether you publish a <code>security.txt</code>.</li>
  <li><strong>Cookies:</strong> the Secure, HttpOnly, and SameSite flags on cookies your home page sets.</li>
 </ul>
@@ -94,7 +94,7 @@
 <footer>
  <div class="wrap">
   <span>Built by <a href="https://nickcastrobuilds.com">Nick Castro</a> · <a href="tel:+17082501040">(708) 250-1040</a> · <a href="mailto:nickcastro1520@gmail.com">nickcastro1520@gmail.com</a></span>
-  <nav aria-label="Footer"><a href="/how-i-built-this">How I built this</a><a href="/about">About</a><a href="/privacy">Privacy</a><a href="https://doesaiknowmybusiness.com">Does AI Know My Business (free AI check)</a><a href="/llms.txt">llms.txt</a></nav>
+  <nav aria-label="Footer"><a href="/someone-sending-emails-from-my-domain">Emails sent from your domain?</a><a href="/how-i-built-this">How I built this</a><a href="/about">About</a><a href="/privacy">Privacy</a><a href="https://doesaiknowmybusiness.com">Does AI Know My Business (free AI check)</a><a href="/llms.txt">llms.txt</a></nav>
  </div>
 </footer>
 </body>
