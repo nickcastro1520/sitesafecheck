@@ -232,7 +232,7 @@
 <ul>
  <li><strong>SPF (Sender Policy Framework)</strong> is a guest list: the servers allowed to send email as your domain.</li>
  <li><strong>DKIM (DomainKeys Identified Mail)</strong> is a tamper seal: a digital signature that proves a message really came from your domain and wasn't changed on the way.</li>
- <li><strong>DMARC (Domain-based Message Authentication, Reporting and Conformance)</strong> is the instructions: it tells receiving servers what to do with mail that fails those checks (nothing, spam folder, or reject) and sends you reports about who is sending as you.</li>
+ <li><strong>DMARC (Domain-based Message Authentication, Reporting and Conformance)</strong> is the instructions: it tells receiving servers what to do with mail that fails those checks (nothing, spam folder, or reject) and sends you reports about who is sending as you. More in <a href="/what-is-dmarc">What is DMARC?</a></li>
 </ul>
 <p>Without a strict DMARC policy, many receivers have to guess, and forged mail can land in your customers' inboxes. The same records also help your real email avoid the spam folder.</p>
 
@@ -244,6 +244,7 @@
 <h3>3. DKIM: turn it on at each sender</h3>
 <p>Each service that sends as you has a DKIM setting. It gives you a key to publish in your DNS, and then it signs your mail.</p>
 <h3>4. DMARC: tighten in stages</h3>
+<p>New to DMARC? <a href="/what-is-dmarc">Here's a plain-English guide</a> to what the three settings do.</p>
 <p>Start with a monitor-only policy (<code>p=none</code>) that changes nothing and sends you reports. Once the reports show your real mail passing, move to quarantine (failures go to spam), then reject (failures are refused). Don't jump straight to reject: it can block your own invoices or form emails if a sender was missed.</p>
 <h3>If you're on Google Workspace, Microsoft 365 or GoDaddy</h3>
 <p>Google Workspace and Microsoft 365 both have DKIM switches in their admin consoles, and both publish the SPF value to include. If you bought Microsoft 365 through GoDaddy, the DNS usually lives at GoDaddy too. Some IT admins on Reddit report that these bundles didn't come with a strict DMARC policy, so it's worth checking yours rather than assuming.</p>

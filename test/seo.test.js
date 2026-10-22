@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 
-const PAGES = { "/": "index", "/about": "about", "/privacy": "privacy", "/how-i-built-this": "how-i-built-this", "/someone-sending-emails-from-my-domain": "someone-sending-emails-from-my-domain", "/chrome-asks-before-opening-my-website": "chrome-asks-before-opening-my-website" };
+const PAGES = { "/": "index", "/about": "about", "/privacy": "privacy", "/how-i-built-this": "how-i-built-this", "/someone-sending-emails-from-my-domain": "someone-sending-emails-from-my-domain", "/chrome-asks-before-opening-my-website": "chrome-asks-before-opening-my-website", "/what-is-dmarc": "what-is-dmarc" };
 const read = (f) => readFile(new URL(`../public/${f}`, import.meta.url), "utf8");
 
 test("indexable pages: unique title, description, h1, self canonical, valid JSON-LD with breadcrumbs", async () => {
@@ -80,4 +80,18 @@ test("Chrome HTTP guide: sourced facts only, no ranking claims, no 'turn it off'
   const ld = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
   assert.equal(ld["@graph"].find((n) => n["@type"] === "FAQPage").mainEntity.length, (html.match(/<details>/g) || []).length);
   for (const f of ["index.html", "about.html", "llms.txt", "sitemap.xml"]) assert.match(await read(f), /chrome-asks-before-opening-my-website/, f);
+});
+
+test("DMARC guide: guardrails, staged rollout, real Gmail threshold, cross-links with the spoofing page", async () => {
+  const html = await read("what-is-dmarc.html");
+  assert.match(html, /more than 5,000 messages a day/); assert.match(html, /Don't jump straight to reject/);
+  assert.doesNotMatch(html, /Grok|Cursor|\d+\s?%|stops all phishing\b(?! \?)|guarantee/i);
+  const limits = html.slice(html.indexOf('id="limits"'), html.indexOf('id="faq"'));
+  assert.match(limits, /specialist/); assert.doesNotMatch(limits, /\$|tel:|mailto:|Nick/);
+  assert.match(html, /\$250–\$500/); assert.match(html, /\$50–\$100\/month/);
+  assert.match(html, /href="\/someone-sending-emails-from-my-domain/);
+  assert.match(await read("someone-sending-emails-from-my-domain.html"), /href="\/what-is-dmarc"/);
+  const ld = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+  assert.equal(ld["@graph"].find((n) => n["@type"] === "FAQPage").mainEntity.length, (html.match(/<details>/g) || []).length);
+  for (const f of ["index.html", "about.html", "llms.txt", "sitemap.xml"]) assert.match(await read(f), /what-is-dmarc/, f);
 });
