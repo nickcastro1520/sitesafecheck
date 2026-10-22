@@ -22,6 +22,7 @@ const caps = globalThis.__ssc_caps || (globalThis.__ssc_caps = new Map());
 const blocked = (k) => { const e = caps.get(k); if (!e) return false; if (e < Date.now()) { caps.delete(k); return false; } return true; };
 const block = (k, ms) => caps.set(k, Date.now() + ms);
 const HOUR = 3600e3;
+export const OVERLOAD_SKIP_MS = 60e3; // 503/500: usually brief, so retry the model after about a minute
 
 export class GeminiError extends Error {
   constructor(code, message, status, trail) { super(message); this.code = code; this.status = status; this.trail = trail || []; }
@@ -82,7 +83,7 @@ export async function ask(opts) {
       if (good.model === model) good.model = "";
       if (e.name === "TimeoutError" || e.name === "AbortError") continue;
       if (e.status === 404 || e.status === 403 || (e.status === 400 && /model|not found|not supported|no longer available|unavailable/i.test(msg))) { block("m:" + model, 6 * HOUR); continue; }
-      if (e.status === 503 || e.status === 500) { block("m:" + model, 10 * 60e3); continue; } // overloaded: skip it for 10 minutes
+      if (e.status === 503 || e.status === 500) { block("m:" + model, OVERLOAD_SKIP_MS); continue; } // overloaded: skip it briefly
       if (e.status === 429) {
         if (zeroQuota(msg)) { block("m:" + model, 6 * HOUR); continue; }
         if (/per ?day|PerDay|daily/i.test(msg)) { block("m:" + model, HOUR); continue; }
