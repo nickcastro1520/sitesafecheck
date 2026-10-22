@@ -82,6 +82,35 @@ export function analyzeHeaders(h, { https }) {
   return out;
 }
 
+// ---------------- PHP version (PHP2Shell, CVE-2026-109618 / CVE-2026-109619) ----------------
+// Reads ONLY headers we already received; no extra requests. Patched releases from php.net, 21 Oct 2026:
+// "PHP 8.5.12, 8.4.27, 8.3.36 and 8.2.35 fix two critical vulnerabilities". Supported branches per
+// php.net/supported-versions: 8.2–8.5 (8.2 security support ends 31 Dec 2026). Anything older is end of life.
+export const PHP_PATCHED = { "8.2": 35, "8.3": 36, "8.4": 27, "8.5": 12 };
+export const PHP_SOURCE = "php.net security releases, 21 Oct 2026";
+export function parsePhpVersion(h) {
+  for (const k of ["x-powered-by", "server"]) {
+    const m = String(h[k] || "").match(/\bPHP\/(\d+)\.(\d+)(?:\.(\d+))?/i);
+    if (m) return { header: k, major: +m[1], minor: +m[2], patch: m[3] === undefined ? null : +m[3], raw: m[0] };
+  }
+  return null;
+}
+export function analyzePhp(h) {
+  const v = parsePhpVersion(h);
+  if (!v) return null; // no PHP version visible: skip the check entirely
+  const label = `${v.major}.${v.minor}${v.patch === null ? "" : "." + v.patch}`;
+  const where = v.header === "server" ? "Server header" : "X-Powered-By header";
+  const branch = `${v.major}.${v.minor}`;
+  const data = { version: label, header: v.header, source: PHP_SOURCE };
+  if (v.major < 8 || (v.major === 8 && v.minor < 2)) return F("php_version", "fail", "medium", `${where} shows PHP ${label}. PHP ${branch} is end of life and no longer gets security fixes, including the October 2026 fixes for CVE-2026-109618 and CVE-2026-109619.`, { ...data, reason: "eol" });
+  const fixed = PHP_PATCHED[branch];
+  if (fixed !== undefined) {
+    if (v.patch === null) return F("php_version", "warn", "low", `${where} shows PHP ${branch} without a patch number. The patched ${branch} release is ${branch}.${fixed} or later (${PHP_SOURCE}).`, { ...data, reason: "unknown-patch" });
+    if (v.patch < fixed) return F("php_version", "fail", "medium", `${where} shows PHP ${label}, older than ${branch}.${fixed}, the release that fixes CVE-2026-109618 and CVE-2026-109619 (${PHP_SOURCE}). Some hosts backport fixes without changing the number, so confirm with your host.`, { ...data, reason: "unpatched", fixedIn: `${branch}.${fixed}` });
+  }
+  return F("php_version", "warn", "low", `${where} shows PHP ${label}. That's at or above the latest security release we know of, but showing the version helps attackers pick targets.`, { ...data, reason: "exposed" });
+}
+
 // ---------------- version banners ----------------
 export function analyzeBanners(h, html = "") {
   const issues = []; const notes = [];

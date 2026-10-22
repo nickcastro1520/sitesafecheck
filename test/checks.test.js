@@ -215,3 +215,20 @@ test("directory listing and security.txt", () => {
   assert.equal(C.analyzeSecurityTxt(resp(200, "<html>Contact: us</html>", "text/html")).status, "info");
   assert.equal(C.analyzeSecurityTxt(null).status, "info");
 });
+
+test("PHP version check: patched thresholds, EOL, skip when hidden", () => {
+  assert.equal(C.analyzePhp({ server: "nginx" }), null);
+  assert.equal(C.analyzePhp({ "x-powered-by": "Express" }), null);
+  assert.equal(C.analyzePhp({ "x-powered-by": "PHP/7.4.3" }).status, "fail");
+  assert.equal(C.analyzePhp({ "x-powered-by": "PHP/7.4.3" }).data.reason, "eol");
+  assert.equal(C.analyzePhp({ "x-powered-by": "PHP/8.1.34" }).data.reason, "eol");
+  const u = C.analyzePhp({ "x-powered-by": "PHP/8.3.35" });
+  assert.equal(u.status, "fail"); assert.equal(u.severity, "medium"); assert.equal(u.data.fixedIn, "8.3.36");
+  for (const v of ["8.2.35", "8.3.36", "8.4.27", "8.5.12", "8.5.13", "8.6.0"]) assert.equal(C.analyzePhp({ "x-powered-by": "PHP/" + v }).status, "warn", v);
+  assert.equal(C.analyzePhp({ "x-powered-by": "PHP/8.4.26" }).status, "fail");
+  assert.equal(C.analyzePhp({ "x-powered-by": "PHP/8.2.34" }).status, "fail");
+  const s = C.analyzePhp({ server: "Apache/2.4.62 (Unix) PHP/8.4.20" });
+  assert.equal(s.data.header, "server"); assert.equal(s.status, "fail");
+  assert.equal(C.analyzePhp({ "x-powered-by": "PHP/8.3" }).data.reason, "unknown-patch");
+  assert.equal(C.analyzePhp({ "x-powered-by": "PHP/8.3" }).status, "warn");
+});

@@ -105,6 +105,8 @@ export async function collect(input, { now = Date.now(), budgetMs = 24000 } = {}
     findings.push(C.analyzeMixed({ https, html, csp: final.headers["content-security-policy"], truncated: final.truncated }));
     findings.push(...C.analyzeHeaders(final.headers, { https }));
     findings.push(C.analyzeBanners(final.headers, html));
+    const php = C.analyzePhp(final.headers);
+    if (php) findings.push(php);
     const hops = (mainR.hops || httpR.hops || []).filter((h) => isSameSite(new URL(h.url).hostname, root));
     findings.push(...C.analyzeCookies(hops.flatMap((h) => h.setCookies || []), { https }));
 
