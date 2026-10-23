@@ -46,3 +46,6 @@ A free, passive website security checker for small business owners. Enter a URL 
 - Never claim a test ran unless you show its results.
 - Scans stay passive and run only on sites the user owns or is authorized to test. Only offer fixes Nick can deliver (headers, SSL/HTTPS, SPF/DKIM/DMARC, version banners, cookie flags). Never offer pentests, code audits or breach cleanup; refer those out.
 - Free plans only. Spending money or sending messages needs Nick's OK. Never mention Grok Bot or Cursor on the site. Use real numbers only.
+
+## Rule (2026-10-23, from Nick via Grok Bot)
+Whenever the site changes (new or edited pages, URLs, titles, content), message SEO & AEO Desk (priority true) with what changed and the URLs.
