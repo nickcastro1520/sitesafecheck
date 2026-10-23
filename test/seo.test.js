@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 
-const PAGES = { "/": "index", "/about": "about", "/privacy": "privacy", "/how-i-built-this": "how-i-built-this", "/someone-sending-emails-from-my-domain": "someone-sending-emails-from-my-domain", "/chrome-asks-before-opening-my-website": "chrome-asks-before-opening-my-website", "/what-is-dmarc": "what-is-dmarc" };
+const PAGES = { "/": "index", "/about": "about", "/privacy": "privacy", "/how-i-built-this": "how-i-built-this", "/someone-sending-emails-from-my-domain": "someone-sending-emails-from-my-domain", "/chrome-asks-before-opening-my-website": "chrome-asks-before-opening-my-website", "/what-is-dmarc": "what-is-dmarc", "/php2shell": "php2shell" };
 const read = (f) => readFile(new URL(`../public/${f}`, import.meta.url), "utf8");
 
 test("indexable pages: unique title, description, h1, self canonical, valid JSON-LD with breadcrumbs", async () => {
@@ -24,7 +24,7 @@ test("indexable pages: unique title, description, h1, self canonical, valid JSON
     if (path === "/") { assert.ok(types.includes("WebApplication") && types.includes("FAQPage")); }
     else assert.ok(types.includes("BreadcrumbList"), `${path} breadcrumbs`);
     if (path === "/how-i-built-this") assert.ok(types.includes("Article"));
-    if (path.startsWith("/chrome-") || path.startsWith("/what-is-")) assert.ok(["Article", "FAQPage", "HowTo"].every((t) => types.includes(t)));
+    if (path.startsWith("/chrome-") || path.startsWith("/what-is-") || path === "/php2shell") assert.ok(["Article", "FAQPage", "HowTo"].every((t) => types.includes(t)));
     if (path === "/someone-sending-emails-from-my-domain") assert.ok(["Article", "FAQPage", "HowTo"].every((t) => types.includes(t)));
     const text = html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<[^>]+>/g, " ").replace(/\s+/g, " ");
     assert.ok(text.length > 1500, `${path} main content is in the static HTML`);
@@ -94,4 +94,21 @@ test("DMARC guide: guardrails, staged rollout, real Gmail threshold, cross-links
   const ld = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
   assert.equal(ld["@graph"].find((n) => n["@type"] === "FAQPage").mainEntity.length, (html.match(/<details>/g) || []).length);
   for (const f of ["index.html", "about.html", "llms.txt", "sitemap.xml"]) assert.match(await read(f), /what-is-dmarc/, f);
+});
+
+test("PHP2Shell guide: honest scope, host does the patching, real versions, sources, links", async () => {
+  const html = await read("php2shell.html");
+  for (const v of ["8.5.12", "8.4.27", "8.3.36", "8.2.35", "CVE-2026-109618", "CVE-2026-109619"]) assert.ok(html.includes(v), v);
+  assert.match(html, /https:\/\/www\.php\.net\/archive\/2026\.php#2026-10-21-5/);
+  assert.match(html, /www\.nsa\.gov\/Press-Room\/.*4630238/);
+  assert.match(html, /It does not test for PHP2Shell/);
+  assert.doesNotMatch(html, /Grok|Cursor|\d+\s?%|guarantee|(check|scan) (detects|protects against|tests for) PHP2Shell/i);
+  const cta = html.slice(html.indexOf('id="cta-main"'), html.indexOf("</aside>"));
+  assert.match(cta, /hide the version and coordinate the update with your host/);
+  assert.doesNotMatch(cta, /Nick (can )?(patch|update|upgrade)s? PHP|pentest|audit|cleanup/i);
+  const after = html.slice(html.indexOf('id="after"'), html.indexOf('id="fake-fixes"'));
+  assert.match(after, /specialist/); assert.doesNotMatch(after, /\$|tel:|mailto:/);
+  const ld = JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);
+  assert.equal(ld["@graph"].find((n) => n["@type"] === "FAQPage").mainEntity.length, (html.match(/<details>/g) || []).length);
+  for (const f of ["index.html", "about.html", "llms.txt", "sitemap.xml"]) assert.match(await read(f), /php2shell/, f);
 });

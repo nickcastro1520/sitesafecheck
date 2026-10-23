@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PHP2Shell: Is My Small Business Website Affected? (Plain-English Guide)</title>
+<meta name="description" content="PHP2Shell can let attackers take over a website&#x27;s server without a password. What it means for small businesses, why updating WordPress isn&#x27;t enough, and what to ask your host.">
+<link rel="canonical" href="https://sitesafecheck.com/php2shell">
+<meta name="theme-color" content="#0b1f3a">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="SiteSafeCheck">
+<meta property="og:url" content="https://sitesafecheck.com/php2shell">
+<meta property="og:title" content="PHP2Shell: Is My Small Business Website Affected? (Plain-English Guide)">
+<meta property="og:description" content="PHP2Shell can let attackers take over a website&#x27;s server without a password. What it means for small businesses, why updating WordPress isn&#x27;t enough, and what to ask your host.">
+<meta property="og:image" content="https://sitesafecheck.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SiteSafeCheck: free website security check for small businesses">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="stylesheet" href="/styles.css">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "BreadcrumbList",
+   "itemListElement": [
+    {
+     "@type": "ListItem",
+     "position": 1,
+     "name": "Home",
+     "item": "https://sitesafecheck.com/"
+    },
+    {
+     "@type": "ListItem",
+     "position": 2,
+     "name": "PHP2Shell",
+     "item": "https://sitesafecheck.com/php2shell"
+    }
+   ]
+  },
+  {
+   "@type": "Article",
+   "headline": "PHP2Shell: is your small business website affected, and what do you ask your host today?",
+   "description": "PHP2Shell can let attackers take over a website's server without a password. What it means for small businesses, why updating WordPress isn't enough, and what to ask your host.",
+   "url": "https://sitesafecheck.com/php2shell",
+   "mainEntityOfPage": "https://sitesafecheck.com/php2shell",
+   "inLanguage": "en-US",
+   "image": "https://sitesafecheck.com/og.png",
+   "datePublished": "2026-10-23",
+   "dateModified": "2026-10-23",
+   "author": {
+    "@type": "Person",
+    "name": "Nick Castro",
+    "url": "https://nickcastrobuilds.com"
+   },
+   "publisher": {
+    "@type": "Organization",
+    "name": "SiteSafeCheck",
+    "url": "https://sitesafecheck.com/"
+   },
+   "citation": [
+    "https://www.php.net/archive/2026.php#2026-10-21-5",
+    "https://www.nsa.gov/Press-Room/Press-Releases-Statements/Press-Release-View/Article/4630238/nsa-advisory-critical-patches-recommended-for-php-vulnerabilities/",
+    "https://www.uschamber.com/co/run/technology/php-security-flaw-small-business-guide",
+    "https://www.cert.europa.eu/publications/security-advisories/2026-018/",
+    "https://www.ncsc.govt.nz/news/ncsc-urges-small-businesses-to-check-websites-and-online-services-following-php-vulnerability/"
+   ]
+  },
+  {
+   "@type": "HowTo",
+   "name": "What to ask your web host about PHP2Shell",
+   "step": [
+    {
+     "@type": "HowToStep",
+     "position": 1,
+     "name": "Ask which PHP version runs your site",
+     "text": "Ask which PHP version runs your site and whether it includes the fixes for CVE-2026-109618 and CVE-2026-109619."
+    },
+    {
+     "@type": "HowToStep",
+     "position": 2,
+     "name": "Ask when the fix was applied",
+     "text": "Ask when the fix was applied and whether PHP and the web server were restarted afterward."
+    },
+    {
+     "@type": "HowToStep",
+     "position": 3,
+     "name": "Ask whether every site is covered",
+     "text": "Ask whether every site is covered including test or staging copies and old sites you no longer use."
+    },
+    {
+     "@type": "HowToStep",
+     "position": 4,
+     "name": "If you're on PHP 8.1 or older, ask for the upgrade plan",
+     "text": "If you're on PHP 8.1 or older, ask for the upgrade plan and the timeline."
+    },
+    {
+     "@type": "HowToStep",
+     "position": 5,
+     "name": "Ask whether they've checked for signs of attack",
+     "text": "Ask whether they've checked for signs of attack going back to October 17."
+    },
+    {
+     "@type": "HowToStep",
+     "position": 6,
+     "name": "If the fix can't go on today, ask what protects you meanwhile",
+     "text": "If the fix can't go on today, ask what protects you meanwhile such as firewall rules or maintenance mode."
+    },
+    {
+     "@type": "HowToStep",
+     "position": 7,
+     "name": "Ask what you need to do on your side",
+     "text": "Ask what you need to do on your side such as resetting passwords or rotating API keys."
+    },
+    {
+     "@type": "HowToStep",
+     "position": 8,
+     "name": "Ask the same of vendors that run online tools for you",
+     "text": "Ask the same of vendors that run online tools for you like booking systems, online stores or customer portals."
+    }
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "What is PHP2Shell?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "The nickname for two critical flaws in PHP, CVE-2026-109618 and CVE-2026-109619, that PHP disclosed and fixed on October 21, 2026. They can let an attacker run their own code on a web server without logging in."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Does updating WordPress fix PHP2Shell?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "No. The flaw is in PHP on the server, not in WordPress. The WordPress security team has said no WordPress update is needed or planned for it. PHP itself must be updated by your host or developer."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Which PHP versions are safe?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "PHP 8.5.12, 8.4.27, 8.3.36, 8.2.35 or newer. PHP 8.1 and older no longer get updates from the PHP project, so they need an upgrade to a supported version or a fix backported by your host or Linux vendor."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "My PHP version looks old. Am I definitely vulnerable?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Not necessarily. Some hosts install the fix without changing the version number you see. Ask your host to confirm in writing."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Does visiting a PHP website put my computer at risk?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "No. New Zealand's National Cyber Security Centre says people browsing the internet don't need to take action, and visiting a website that uses PHP doesn't put phones or home computers at risk."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Should I take my site offline?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "If the fix can't go on right away, US officials (CISA, the NSA and the FBI) recommend taking affected systems offline until they're updated. Decide with your host; maintenance mode is one way to do it."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Can SiteSafeCheck tell me if I'm affected?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "No. The free check only spots whether your site shows its PHP version in its headers. It doesn't test for PHP2Shell. Your host is the one who can confirm the patch."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "I think my site was hacked. What now?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Contact your host and a qualified incident-response or malware specialist, and report it (in the US, to CISA or the FBI's IC3). SiteSafeCheck doesn't do hack cleanup."
+     }
+    }
+   ]
+  }
+ ]
+}
+</script>
+
+<!--GA-->
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+ <div class="wrap">
+  <a class="logo" href="/" aria-label="SiteSafeCheck home"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6 11 14v16c0 13.4 8.9 23.8 21 27.6C44.1 53.8 53 43.4 53 30V14L32 6Z" fill="#14907d"/><path d="m22 32 7 7 13-14" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>SiteSafeCheck</a>
+  <nav class="main" aria-label="Main"><a href="/#what">What we check</a><a href="/#fixes">Get it fixed</a><a href="/#faq">FAQ</a><a href="/about">About</a></nav>
+ </div>
+</header>
+<main id="main" class="wrap page article">
+<p class="kicker">Website security news</p>
+<h1>PHP2Shell: is your small business website affected, and what do you ask your host today?</h1>
+<p class="lede-dark">You saw "PHP2Shell" in the news, in an email from your host, or in a worried post online. Here's what it means in plain English, how to tell if your site uses PHP, and the exact questions to send your host today.</p>
+<p><small>Last updated October 23, 2026. Details may change, so check the <a href="https://www.php.net/archive/2026.php#2026-10-21-5">PHP security advisory</a> for the latest.</small></p>
+
+<h2 id="short-answer">What is PHP2Shell? The short answer</h2>
+<p><strong>PHP2Shell is the nickname for two critical flaws in PHP (CVE-2026-109618 and CVE-2026-109619), the software that runs many websites, including every WordPress site. They can let an attacker take control of the server without logging in. The fix is a PHP update on your server, which is your hosting company's or developer's job, so the most important step today is to ask them whether it has been applied.</strong></p>
+<p>(PHP is the engine behind a lot of what happens on a website: carts, blog posts, contact forms and logins.)</p>
+<p>The PHP project announced the flaws and released fixes on October 21, 2026, in its <a href="https://www.php.net/archive/2026.php#2026-10-21-5">security advisory</a>, and asked all PHP users to update immediately. The same day the <a href="https://www.nsa.gov/Press-Room/Press-Releases-Statements/Press-Release-View/Article/4630238/nsa-advisory-critical-patches-recommended-for-php-vulnerabilities/">NSA issued an advisory</a> recommending the critical patches. Europe's CERT-EU <a href="https://www.cert.europa.eu/publications/security-advisories/2026-018/">reports</a> that technical details are being discussed publicly and early proof-of-concept attack code has begun to circulate.</p>
+
+<h2 id="affected">Is my website affected?</h2>
+<p>Your site probably uses PHP if it runs on WordPress, WooCommerce, Drupal, Joomla, Magento (Adobe Commerce), PrestaShop or OpenCart, according to the <a href="https://www.uschamber.com/co/run/technology/php-security-flaw-small-business-guide">US Chamber of Commerce</a>. New Zealand's National Cyber Security Centre <a href="https://www.ncsc.govt.nz/news/ncsc-urges-small-businesses-to-check-websites-and-online-services-following-php-vulnerability/">adds</a> sites hosted by a provider that uses PHP, and web apps that depend on it. If a developer or your host built your site, ask them.</p>
+<p>On an all-in-one website builder, ask your provider. We don't claim any specific platform is or isn't affected.</p>
+<h3 id="check-version">How to check your PHP version</h3>
+<ul>
+ <li><strong>WordPress:</strong> log in and go to <strong>Tools &gt; Site Health &gt; Info &gt; Server</strong>.</li>
+ <li><strong>Anything else:</strong> look in your host's control panel, or ask your developer.</li>
+</ul>
+<p>Then compare it with the fixed versions: <strong>8.5.12, 8.4.27, 8.3.36 or 8.2.35</strong> (or newer in the same line). <strong>PHP 8.1 and older</strong> no longer get updates from the PHP project; they need an upgrade to a supported version or a fix backported by your host or Linux vendor.</p>
+<p>One catch: some hosts install the fix without changing the version number you see. If yours looks old, ask your host to confirm before you panic.</p>
+<p class="cta-inline"><a class="btn btn-dark" href="/">Is your site showing its PHP version? Free check, 10 seconds</a></p>
+<p>Our free check shows whether your site is publicly announcing its PHP version in its headers, something attackers look for. It does not test for PHP2Shell.</p>
+
+<h2 id="wordpress">Why updating WordPress or plugins won't fix it</h2>
+<p>These are flaws in PHP itself, not in the website software running on top of it. The PHP project says a demonstrated exploit can trigger the attack before any of your site's own code runs (<a href="https://www.php.net/archive/2026.php#2026-10-21-5">PHP advisory</a>). The WordPress security team has said no WordPress update is needed or planned for this issue (<a href="https://www.uschamber.com/co/run/technology/php-security-flaw-small-business-guide">US Chamber</a>). Keep WordPress and plugins up to date anyway, but PHP has to be updated on the server.</p>
+
+<h2 id="ask-your-host">What to ask your host today (checklist)</h2>
+<p>Copy these into an email to your host or developer, and get the answers in writing:</p>
+<ol class="flow">
+ <li><strong>Ask which PHP version runs your site</strong>, and whether it includes the fixes for CVE-2026-109618 and CVE-2026-109619.</li>
+ <li><strong>Ask when the fix was applied</strong>, and whether PHP and the web server were restarted afterward.</li>
+ <li><strong>Ask whether every site is covered</strong>, including test or staging copies and old sites you no longer use.</li>
+ <li><strong>If you&#x27;re on PHP 8.1 or older, ask for the upgrade plan</strong>, and the timeline.</li>
+ <li><strong>Ask whether they&#x27;ve checked for signs of attack</strong>, going back to October 17.</li>
+ <li><strong>If the fix can&#x27;t go on today, ask what protects you meanwhile</strong>, such as firewall rules or maintenance mode.</li>
+ <li><strong>Ask what you need to do on your side</strong>, such as resetting passwords or rotating API keys.</li>
+ <li><strong>Ask the same of vendors that run online tools for you</strong>, like booking systems, online stores or customer portals.</li>
+</ol>
+<p>(Questions adapted from the <a href="https://www.uschamber.com/co/run/technology/php-security-flaw-small-business-guide">US Chamber's guide</a> and <a href="https://www.ncsc.govt.nz/news/ncsc-urges-small-businesses-to-check-websites-and-online-services-following-php-vulnerability/">NZ NCSC's guidance</a>.) While you're talking to them, ask about your email protection too: <a href="/what-is-dmarc">what DMARC is and why it matters</a>.</p>
+
+<h2 id="not-patched">If you can't get it patched today</h2>
+<ul>
+ <li>CISA, the NSA and the FBI recommend taking vulnerable systems offline if they can't be updated right away (<a href="https://www.uschamber.com/co/run/technology/php-security-flaw-small-business-guide">US Chamber</a>). For a website, that can mean maintenance mode until the fix is in.</li>
+ <li>A web application firewall from your host can be a stopgap. It isn't a fix.</li>
+</ul>
+
+<h2 id="after">After the patch: passwords, keys and warning signs</h2>
+<ul>
+ <li>One of the flaws can leak passwords and keys from server memory, so once the fix is in, reset your site admin and hosting passwords, ask your developer about rotating keys, and turn on two-step login (MFA).</li>
+ <li>Attack attempts may date back to October 17. Watch for admin accounts you don't recognize, unfamiliar files, odd scheduled tasks, crashes or slowness, and changes you didn't make.</li>
+ <li><strong>If anything looks wrong</strong>, contact your host and a qualified incident-response or malware specialist, and report it (in the US, to <a href="https://www.cisa.gov/report">CISA</a> or the FBI's <a href="https://www.ic3.gov/">IC3</a>). SiteSafeCheck doesn't do hack cleanup; that's specialist work.</li>
+</ul>
+
+<h2 id="fake-fixes">Watch out for fake fixes and scam calls</h2>
+<p>Don't install "PHP2Shell fix" plugins or code snippets from forums. Security firm Patchstack has warned against these unofficial fixes, and some may contain malware (<a href="https://www.uschamber.com/co/run/technology/php-security-flaw-small-business-guide">US Chamber</a>). If someone calls or emails offering to fix it, contact your host through its official website or support line instead.</p>
+
+<h2 id="our-check">What our free check can and can't tell you</h2>
+<ul>
+ <li><strong>It can show</strong> whether your site's headers expose your PHP version (for example in <code>X-Powered-By</code>), and flag that version if it's older than the fixed releases. It also checks HTTPS, email spoofing protection and other basics. <a href="/chrome-asks-before-opening-my-website">Why Chrome now asks before opening some sites</a>.</li>
+ <li><strong>It can't</strong> test whether your site is vulnerable to PHP2Shell or has been attacked, patch PHP, audit your code or remove malware.</li>
+</ul>
+<aside class="cta" aria-labelledby="cta-main">
+ <h2 id="cta-main">Stop advertising your PHP version</h2>
+ <p>Run the free 10-second check to see if your site is broadcasting its PHP version, then send the checklist above to your host. If it is, Nick can hide the version and coordinate the update with your host, as part of his one-time fix for version banners and other common gaps ($250–$500). Patching PHP itself stays with your host.</p>
+ <p class="ractions"><a class="btn btn-light" href="/">Run the free check</a><a class="btn btn-ghost" href="tel:+17082501040">Call (708) 250-1040</a><a class="btn btn-ghost" href="mailto:nickcastro1520@gmail.com?subject=PHP%20version%20banner">Email Nick</a></p>
+</aside>
+
+<h2 id="faq">Frequently asked questions</h2>
+<div class="faq">
+<details><summary>What is PHP2Shell?</summary><p>The nickname for two critical flaws in PHP, CVE-2026-109618 and CVE-2026-109619, that PHP disclosed and fixed on October 21, 2026. They can let an attacker run their own code on a web server without logging in.</p></details>
+<details><summary>Does updating WordPress fix PHP2Shell?</summary><p>No. The flaw is in PHP on the server, not in WordPress. The WordPress security team has said no WordPress update is needed or planned for it. PHP itself must be updated by your host or developer.</p></details>
+<details><summary>Which PHP versions are safe?</summary><p>PHP 8.5.12, 8.4.27, 8.3.36, 8.2.35 or newer. PHP 8.1 and older no longer get updates from the PHP project, so they need an upgrade to a supported version or a fix backported by your host or Linux vendor.</p></details>
+<details><summary>My PHP version looks old. Am I definitely vulnerable?</summary><p>Not necessarily. Some hosts install the fix without changing the version number you see. Ask your host to confirm in writing.</p></details>
+<details><summary>Does visiting a PHP website put my computer at risk?</summary><p>No. New Zealand&#x27;s National Cyber Security Centre says people browsing the internet don&#x27;t need to take action, and visiting a website that uses PHP doesn&#x27;t put phones or home computers at risk.</p></details>
+<details><summary>Should I take my site offline?</summary><p>If the fix can&#x27;t go on right away, US officials (CISA, the NSA and the FBI) recommend taking affected systems offline until they&#x27;re updated. Decide with your host; maintenance mode is one way to do it.</p></details>
+<details><summary>Can SiteSafeCheck tell me if I&#x27;m affected?</summary><p>No. The free check only spots whether your site shows its PHP version in its headers. It doesn&#x27;t test for PHP2Shell. Your host is the one who can confirm the patch.</p></details>
+<details><summary>I think my site was hacked. What now?</summary><p>Contact your host and a qualified incident-response or malware specialist, and report it (in the US, to CISA or the FBI&#x27;s IC3). SiteSafeCheck doesn&#x27;t do hack cleanup.</p></details>
+</div>
+
+<h2 id="sources">Sources</h2>
+<ul>
+ <li><a href="https://www.php.net/archive/2026.php#2026-10-21-5">PHP: Security advisory, critical remote code execution vulnerabilities</a> (October 21, 2026)</li>
+ <li><a href="https://www.nsa.gov/Press-Room/Press-Releases-Statements/Press-Release-View/Article/4630238/nsa-advisory-critical-patches-recommended-for-php-vulnerabilities/">NSA: Critical patches recommended for PHP vulnerabilities</a> (October 21, 2026)</li>
+ <li><a href="https://www.cert.europa.eu/publications/security-advisories/2026-018/">CERT-EU Security Advisory 2026-018</a></li>
+ <li><a href="https://www.ncsc.govt.nz/news/ncsc-urges-small-businesses-to-check-websites-and-online-services-following-php-vulnerability/">NZ NCSC: small business guidance</a> (October 23, 2026)</li>
+ <li><a href="https://www.uschamber.com/co/run/technology/php-security-flaw-small-business-guide">US Chamber of Commerce CO—: a security flaw is affecting millions of websites</a></li>
+</ul>
+</main>
+<footer>
+ <div class="wrap">
+  <span>Built by <a href="https://nickcastrobuilds.com">Nick Castro</a> · <a href="tel:+17082501040">(708) 250-1040</a> · <a href="mailto:nickcastro1520@gmail.com">nickcastro1520@gmail.com</a></span>
+  <nav aria-label="Footer"><a href="/php2shell">PHP2Shell: are you affected?</a><a href="/someone-sending-emails-from-my-domain">Emails sent from your domain?</a><a href="/how-i-built-this">How I built this</a><a href="/about">About</a><a href="/privacy">Privacy</a><a href="https://doesaiknowmybusiness.com">Does AI Know My Business (free AI check)</a><a href="/llms.txt">llms.txt</a></nav>
+ </div>
+</footer>
+</body>
+</html>

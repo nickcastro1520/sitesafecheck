@@ -10,6 +10,7 @@ export const PAGES = [
   { path: "/someone-sending-emails-from-my-domain", file: "public/someone-sending-emails-from-my-domain.html", changefreq: "monthly", priority: "0.7" },
   { path: "/chrome-asks-before-opening-my-website", file: "public/chrome-asks-before-opening-my-website.html", changefreq: "monthly", priority: "0.7" },
   { path: "/what-is-dmarc", file: "public/what-is-dmarc.html", changefreq: "monthly", priority: "0.7" },
+  { path: "/php2shell", file: "public/php2shell.html", changefreq: "monthly", priority: "0.7" },
   { path: "/privacy", file: "public/privacy.html", changefreq: "yearly", priority: "0.3" },
 ];
 const lastmod = (f) => execFileSync("git", ["log", "-1", "--format=%cs", "--", f], { encoding: "utf8" }).trim() || new Date().toISOString().slice(0, 10);
