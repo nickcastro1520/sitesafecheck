@@ -10,11 +10,11 @@ A free, passive website security checker for small business owners. Enter a URL 
 - SEO is fully set up: GA4 on Nick's personal account, Search Console (verified, sitemap submitted), JSON-LD, IndexNow (daily workflow), and Lighthouse 100 on all pages.
 - In progress: the weekly Google ranking program (rules in `/workspace/seo/RULES.md` on Grok's computer). The first run is Mon 2026-10-26.
 - Live guide pages: /chrome-asks-before-opening-my-website and /what-is-dmarc (published 2026-10-22, submitted to IndexNow; Search Console requests still to do in the browser).
-- Unpublished: /php2shell on local branch page/php2shell, waiting for Nick's OK.
+- Live guide: /php2shell (published 2026-10-23, submitted to IndexNow; Search Console request still to do).
 - Open pull requests: none.
 
 ## Decisions (newest first)
-- 2026-10-23: PHP2Shell guide (/php2shell) built on local branch page/php2shell only (not pushed, not deployed, no IndexNow). Facts from php.net advisory (archive/2026.php#2026-10-21-5), CERT-EU 2026-018, NZ NCSC (Oct 23) and US Chamber; NSA page linked but returned 403 to curl, so nothing is quoted from it. No percentages (the US Chamber "70%" left out). Page says the free check does not test for PHP2Shell; CTA offers only hiding the version and coordinating with the host. "People also ask" not captured. Tests now 94.
+- 2026-10-23: PHP2Shell guide (/php2shell) published after Nick's OK (fast-forwarded from page/php2shell, live 200, submitted to IndexNow). Facts from php.net advisory (archive/2026.php#2026-10-21-5), CERT-EU 2026-018, NZ NCSC (Oct 23) and US Chamber; NSA page linked but returned 403 to curl, so nothing is quoted from it. No percentages (the US Chamber "70%" left out). Page says the free check does not test for PHP2Shell; CTA offers only hiding the version and coordinating with the host. "People also ask" not captured. Tests now 94.
 - 2026-10-22: Published the Chrome HTTP and DMARC guides after Nick's OK. Overloaded Gemini models (503/500) are now skipped for 60 seconds instead of 10 minutes, so one bad moment no longer turns AI wording off for 10 minutes.
 - 2026-10-22: Chrome ask-before-HTTP guide built on a local branch only. Facts only from Google's Oct 21, 2026 blog and Chrome's adoption guide; no ranking claims, no prompt quote (not captured), "about two weeks" for the remembered yes.
 - 2026-10-22: "What is DMARC?" guide built on a local branch only. Gmail threshold taken from Gmail's sender guidelines (more than 5,000 messages a day to Gmail accounts); FTC link is its small-business email authentication page. No paid offer in the hacked-mailbox note.
